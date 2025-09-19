@@ -29,6 +29,7 @@ namespace ECommerce.API.Data
             });
 
             // Seed data
+            var seedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             modelBuilder.Entity<Product>().HasData(
                 new Product
                 {
@@ -37,8 +38,8 @@ namespace ECommerce.API.Data
                     Description = "Comfortable cotton t-shirt perfect for everyday wear",
                     Price = 29.99m,
                     ImageUrl = "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
+                    CreatedAt = seedDate,
+                    UpdatedAt = seedDate
                 },
                 new Product
                 {
@@ -47,8 +48,8 @@ namespace ECommerce.API.Data
                     Description = "Stylish denim jacket for a casual look",
                     Price = 89.99m,
                     ImageUrl = "https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=400",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
+                    CreatedAt = seedDate,
+                    UpdatedAt = seedDate
                 },
                 new Product
                 {
@@ -57,8 +58,8 @@ namespace ECommerce.API.Data
                     Description = "Light and breezy summer dress in floral pattern",
                     Price = 59.99m,
                     ImageUrl = "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
+                    CreatedAt = seedDate,
+                    UpdatedAt = seedDate
                 }
             );
         }
