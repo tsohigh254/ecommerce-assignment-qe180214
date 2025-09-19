@@ -1,0 +1,123 @@
+@model ECommerce.Core.Models.Product
+
+@{
+    ViewData["Title"] = "Create Product";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Add New Product
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="Name" class="form-label fw-bold">Product Name *</label>
+                                <input asp-for="Name" class="form-control form-control-lg" placeholder="Enter product name">
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="Description" class="form-label fw-bold">Description *</label>
+                                <textarea asp-for="Description" class="form-control" rows="4" placeholder="Enter product description"></textarea>
+                                <span asp-validation-for="Description" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Price" class="form-label fw-bold">Price *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Price" class="form-control" type="number" step="0.01" min="0" placeholder="0.00">
+                                </div>
+                                <span asp-validation-for="Price" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ImageUrl" class="form-label fw-bold">Image URL</label>
+                                <input asp-for="ImageUrl" class="form-control" type="url" placeholder="https://example.com/image.jpg">
+                                <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Optional: Enter a direct URL to an image
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div class="row mb-3" id="imagePreview" style="display: none;">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Image Preview</label>
+                                <div class="border rounded p-3 text-center bg-light">
+                                    <img id="previewImg" src="" alt="Image Preview" style="max-width: 300px; max-height: 200px; object-fit: cover;" class="rounded">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a asp-action="Index" class="btn btn-outline-secondary btn-lg me-2">
+                                        <i class="fas fa-arrow-left me-2"></i>
+                                        Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fas fa-save me-2"></i>
+                                        Create Product
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Image URL preview
+        document.getElementById('ImageUrl').addEventListener('input', function() {
+            var url = this.value;
+            var preview = document.getElementById('imagePreview');
+            var img = document.getElementById('previewImg');
+            
+            if (url && isValidUrl(url)) {
+                img.src = url;
+                img.onload = function() {
+                    preview.style.display = 'block';
+                };
+                img.onerror = function() {
+                    preview.style.display = 'none';
+                };
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+        
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+    </script>
+}

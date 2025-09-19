@@ -1,0 +1,166 @@
+@model ECommerce.Core.Models.Product
+
+@{
+    ViewData["Title"] = $"Edit {Model.Name}";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Edit Product: @Model.Name
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <input asp-for="Id" type="hidden" />
+                        <input asp-for="CreatedAt" type="hidden" />
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="Name" class="form-label fw-bold">Product Name *</label>
+                                <input asp-for="Name" class="form-control form-control-lg" placeholder="Enter product name">
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="Description" class="form-label fw-bold">Description *</label>
+                                <textarea asp-for="Description" class="form-control" rows="4" placeholder="Enter product description"></textarea>
+                                <span asp-validation-for="Description" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Price" class="form-label fw-bold">Price *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input asp-for="Price" class="form-control" type="number" step="0.01" min="0" placeholder="0.00">
+                                </div>
+                                <span asp-validation-for="Price" class="text-danger small"></span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ImageUrl" class="form-label fw-bold">Image URL</label>
+                                <input asp-for="ImageUrl" class="form-control" type="url" placeholder="https://example.com/image.jpg">
+                                <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                                <div class="form-text">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Optional: Enter a direct URL to an image
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Current Image Preview -->
+                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                        {
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold">Current Image</label>
+                                    <div class="border rounded p-3 text-center bg-light">
+                                        <img src="@Model.ImageUrl" alt="Current Image" style="max-width: 300px; max-height: 200px; object-fit: cover;" class="rounded">
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- New Image Preview -->
+                        <div class="row mb-3" id="imagePreview" style="display: none;">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">New Image Preview</label>
+                                <div class="border rounded p-3 text-center bg-light">
+                                    <img id="previewImg" src="" alt="Image Preview" style="max-width: 300px; max-height: 200px; object-fit: cover;" class="rounded">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product Metadata -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body py-2">
+                                        <small class="text-muted">
+                                            <strong>Created:</strong> @Model.CreatedAt.ToString("MMM dd, yyyy 'at' h:mm tt")
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light">
+                                    <div class="card-body py-2">
+                                        <small class="text-muted">
+                                            <strong>Product ID:</strong> #@Model.Id
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info btn-lg me-2">
+                                        <i class="fas fa-eye me-2"></i>
+                                        View Details
+                                    </a>
+                                    <a asp-action="Index" class="btn btn-outline-secondary btn-lg me-2">
+                                        <i class="fas fa-arrow-left me-2"></i>
+                                        Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-warning btn-lg">
+                                        <i class="fas fa-save me-2"></i>
+                                        Update Product
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Image URL preview for new image
+        document.getElementById('ImageUrl').addEventListener('input', function() {
+            var url = this.value;
+            var preview = document.getElementById('imagePreview');
+            var img = document.getElementById('previewImg');
+            var currentImageUrl = '@Model.ImageUrl';
+            
+            if (url && url !== currentImageUrl && isValidUrl(url)) {
+                img.src = url;
+                img.onload = function() {
+                    preview.style.display = 'block';
+                };
+                img.onerror = function() {
+                    preview.style.display = 'none';
+                };
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+        
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+    </script>
+}
