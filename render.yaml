@@ -14,3 +14,17 @@ services:
         value: Production
       - key: DATABASE_CONNECTION_STRING
         sync: false  # This will be set manually in Render dashboard
+
+  - type: web
+    name: ecommerce-web-qe180214
+    env: docker
+    dockerfilePath: ./src/ECommerce.Web/Dockerfile
+    repo: https://github.com/tsohigh254/ecommerce-assignment-qe180214.git
+    branch: main
+    region: singapore
+    plan: free
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
