@@ -7,7 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // Add Entity Framework
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING") 
+    ?? builder.Configuration.GetConnectionString("DefaultConnection") 
     ?? "Host=localhost;Database=ecommerce;Username=postgres;Password=dev123";
 builder.Services.AddDbContext<ECommerceDbContext>(options =>
     options.UseNpgsql(connectionString));
