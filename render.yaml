@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: ecommerce-api-qe180214
+    env: docker
+    dockerfilePath: ./src/ECommerce.API/Dockerfile
+    repo: https://github.com/tsohigh254/ecommerce-assignment-qe180214.git
+    branch: main
+    region: singapore
+    plan: free
+    buildCommand: ""
+    startCommand: ""
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: DATABASE_CONNECTION_STRING
+        sync: false  # This will be set manually in Render dashboard
