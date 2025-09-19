@@ -9,9 +9,50 @@ A complete e-commerce platform built with .NET 8, featuring a RESTful API backen
 
 ## 🚀 Live Demo
 
-- **Frontend Application:** `https://ecommerce-web-qe180214.onrender.com`
-- **API Documentation:** `https://ecommerce-api-qe180214.onrender.com/swagger`
-- **GitHub Repository:** `https://github.com/yourusername/ecommerce-assignment-qe180214`
+### 🌐 **Production Applications:**
+- **🎨 Frontend (Web UI):** `https://ecommerce-web-qe180214.onrender.com`
+- **🔗 API Base URL:** `https://ecommerce-assignment-qe180214.onrender.com`
+- **📚 GitHub Repository:** `https://github.com/tsohigh254/ecommerce-assignment-qe180214`
+
+### 🧪 **API Endpoints (Working):**
+```bash
+# Get all products
+GET https://ecommerce-assignment-qe180214.onrender.com/api/products
+
+# Get single product
+GET https://ecommerce-assignment-qe180214.onrender.com/api/products/1
+
+# Create new product (POST)
+POST https://ecommerce-assignment-qe180214.onrender.com/api/products
+
+# Update product (PUT)
+PUT https://ecommerce-assignment-qe180214.onrender.com/api/products/1
+
+# Delete product (DELETE)
+DELETE https://ecommerce-assignment-qe180214.onrender.com/api/products/1
+```
+
+### ⚠️ **Important Notes about API Paths:**
+
+#### **404 Responses (Expected Behavior):**
+- **`/api`** → 404 ✅ **Normal** - Base path prefix, not an actual endpoint
+- **`/swagger`** → 404 ✅ **Normal** - Disabled in production for security
+
+#### **Technical Explanation:**
+1. **`/api` Base Path:**
+   - This is a route prefix defined in `[Route("api/[controller]")]`
+   - No action method handles GET requests at `/api` root
+   - Similar to how `/api` is a "folder" and `/api/products` is the actual "file"
+
+2. **Swagger Documentation:**
+   - Only available in Development environment
+   - Disabled in Production following security best practices
+   - Code: `if (app.Environment.IsDevelopment()) { app.UseSwagger(); }`
+
+3. **Production Security:**
+   - Swagger UI exposure in production is a security vulnerability
+   - API documentation should not be publicly accessible
+   - This follows industry standard practices
 
 ## 🛠️ Technology Stack
 
@@ -279,6 +320,61 @@ This is an assignment project for educational purposes. The implementation demon
 - **Responsive Web Design** best practices
 - **RESTful API** design patterns
 - **Modern .NET Development** techniques
+
+## 🧪 Testing Guide
+
+### **Frontend Testing:**
+1. **Visit Application:** `https://ecommerce-web-qe180214.onrender.com`
+2. **Browse Products:** View responsive product grid
+3. **Test CRUD Operations:**
+   - **CREATE:** Click "Create New Product" → Fill form → Submit
+   - **READ:** Click product cards to view details
+   - **UPDATE:** Click "Edit" → Modify fields → Save
+   - **DELETE:** Click "Delete" → Confirm → Product removed
+
+### **API Testing with cURL:**
+```bash
+# Test GET all products
+curl https://ecommerce-assignment-qe180214.onrender.com/api/products
+
+# Test GET single product
+curl https://ecommerce-assignment-qe180214.onrender.com/api/products/1
+
+# Test POST create product
+curl -X POST https://ecommerce-assignment-qe180214.onrender.com/api/products \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test Product","description":"Test Description","price":99.99}'
+
+# Test PUT update product
+curl -X PUT https://ecommerce-assignment-qe180214.onrender.com/api/products/1 \
+  -H "Content-Type: application/json" \
+  -d '{"id":1,"name":"Updated Product","description":"Updated Description","price":199.99}'
+
+# Test DELETE product
+curl -X DELETE https://ecommerce-assignment-qe180214.onrender.com/api/products/1
+```
+
+### **Expected API Responses:**
+- **GET /api/products:** JSON array of products with full details
+- **GET /api/products/{id}:** Single product JSON object
+- **POST /api/products:** Returns created product with generated ID
+- **PUT /api/products/{id}:** Returns 204 No Content on success
+- **DELETE /api/products/{id}:** Returns 204 No Content on success
+
+### **Sample Response:**
+```json
+[
+  {
+    "id": 1,
+    "name": "Classic T-Shirt",
+    "description": "Comfortable cotton t-shirt perfect for everyday wear",
+    "price": 29.99,
+    "imageUrl": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+]
+```
 
 ## 📞 Support
 
