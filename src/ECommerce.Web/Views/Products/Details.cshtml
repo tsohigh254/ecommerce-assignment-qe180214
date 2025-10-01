@@ -5,99 +5,163 @@
 }
 
 <div class="container">
-    <div class="row">
-        <div class="col-md-12 mb-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a asp-action="Index">Products</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Products</a></li>
                     <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
                 </ol>
             </nav>
         </div>
     </div>
 
-    <div class="row">
+    <div class="row g-4">
         <!-- Product Image -->
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm">
-                @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                {
-                    <img src="@Model.ImageUrl" class="card-img product-detail-image" alt="@Model.Name">
-                }
-                else
-                {
-                    <div class="card-img d-flex align-items-center justify-content-center bg-light" style="height: 400px;">
-                        <i class="fas fa-image fa-4x text-muted"></i>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg animate__animated animate__fadeInLeft sticky-top" style="top: 100px;">
+                <div class="position-relative overflow-hidden" style="border-radius: var(--radius-lg);">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" class="card-img product-detail-image w-100" alt="@Model.Name" 
+                             style="height: 500px; object-fit: cover;">
+                        <div class="position-absolute top-0 start-0 w-100 h-100" 
+                             style="background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.3) 100%);"></div>
+                    }
+                    else
+                    {
+                        <div class="card-img d-flex align-items-center justify-content-center" 
+                             style="height: 500px; background: var(--primary-gradient);">
+                            <div class="text-center">
+                                <i class="fas fa-image fa-5x text-white opacity-50 mb-3"></i>
+                                <p class="text-white">No image available</p>
+                            </div>
+                        </div>
+                    }
+                    <div class="position-absolute top-0 end-0 m-4">
+                        <span class="badge bg-white text-dark px-4 py-2 shadow-lg" style="font-size: 1rem;">
+                            <i class="fas fa-star text-warning me-1"></i>
+                            Premium
+                        </span>
                     </div>
-                }
+                </div>
             </div>
         </div>
 
         <!-- Product Information -->
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h1 class="card-title text-primary fw-bold mb-3">@Model.Name</h1>
-                    
-                    <div class="mb-4">
-                        <h2 class="text-success fw-bold mb-0">$@Model.Price.ToString("F2")</h2>
-                    </div>
-
-                    <div class="mb-4">
-                        <h5 class="fw-bold text-muted">Description</h5>
-                        <p class="card-text">@Model.Description</p>
-                    </div>
-
-                    <!-- Product Details -->
-                    <div class="row mb-4">
-                        <div class="col-sm-6">
-                            <h6 class="fw-bold text-muted">Product ID</h6>
-                            <p class="mb-2">#@Model.Id</p>
+        <div class="col-lg-6">
+            <div class="animate__animated animate__fadeInRight">
+                <div class="card border-0 shadow-lg mb-4">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="mb-3">
+                            <span class="badge bg-light text-primary px-3 py-2">
+                                <i class="fas fa-tag me-1"></i>
+                                Product ID: #@Model.Id
+                            </span>
                         </div>
-                        <div class="col-sm-6">
-                            <h6 class="fw-bold text-muted">Added Date</h6>
-                            <p class="mb-2">
-                                <i class="fas fa-calendar me-1"></i>
-                                @Model.CreatedAt.ToString("MMMM dd, yyyy")
-                            </p>
+                        
+                        <h1 class="fw-bold mb-4" style="color: var(--primary-color); font-size: 2.5rem;">
+                            @Model.Name
+                        </h1>
+                        
+                        <div class="mb-4 pb-4 border-bottom">
+                            <div class="d-flex align-items-baseline">
+                                <span class="display-4 fw-bold text-gradient me-3">
+                                    $@Model.Price.ToString("F2")
+                                </span>
+                                <span class="text-muted">USD</span>
+                            </div>
                         </div>
-                        @if (Model.UpdatedAt != Model.CreatedAt)
-                        {
-                            <div class="col-sm-6">
-                                <h6 class="fw-bold text-muted">Last Updated</h6>
-                                <p class="mb-2">
-                                    <i class="fas fa-edit me-1"></i>
-                                    @Model.UpdatedAt.ToString("MMMM dd, yyyy")
-                                </p>
-                            </div>
-                        }
-                    </div>
 
-                    <!-- Action Buttons -->
-                    <div class="d-grid gap-2">
-                        <div class="row">
-                            <div class="col-sm-4">
-                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning w-100">
-                                    <i class="fas fa-edit me-2"></i>
-                                    Edit Product
-                                </a>
+                        <div class="mb-4">
+                            <h5 class="fw-bold mb-3">
+                                <i class="fas fa-align-left me-2 text-primary"></i>
+                                Description
+                            </h5>
+                            <p class="text-muted lead">@Model.Description</p>
+                        </div>
+
+                        <!-- Product Metadata -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="card border-0 bg-light h-100">
+                                    <div class="card-body">
+                                        <small class="text-muted d-block mb-1">
+                                            <i class="fas fa-calendar-plus me-1"></i>
+                                            Added Date
+                                        </small>
+                                        <strong>@Model.CreatedAt.ToString("MMM dd, yyyy")</strong>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-sm-4">
-                                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger w-100">
-                                    <i class="fas fa-trash me-2"></i>
-                                    Delete Product
-                                </a>
+                            <div class="col-6">
+                                <div class="card border-0 bg-light h-100">
+                                    <div class="card-body">
+                                        <small class="text-muted d-block mb-1">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Last Updated
+                                        </small>
+                                        <strong>@Model.UpdatedAt.ToString("MMM dd, yyyy")</strong>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-sm-4">
-                                <a asp-action="Index" class="btn btn-outline-primary w-100">
-                                    <i class="fas fa-arrow-left me-2"></i>
-                                    Back to List
-                                </a>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-3">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-lg shadow">
+                                <i class="fas fa-edit me-2"></i>
+                                Edit Product
+                            </a>
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-lg w-100">
+                                        <i class="fas fa-trash me-2"></i>
+                                        Delete
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a asp-action="Index" class="btn btn-outline-primary btn-lg w-100">
+                                        <i class="fas fa-arrow-left me-2"></i>
+                                        Back
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Additional Info Card -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-shield-alt me-2 text-success"></i>
+                            Product Guarantees
+                        </h6>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Quality Assured
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Fast Shipping Available
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                30-Day Return Policy
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Secure Payment Options
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
         </div>
     </div>
 

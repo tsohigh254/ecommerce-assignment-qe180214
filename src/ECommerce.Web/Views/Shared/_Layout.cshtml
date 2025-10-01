@@ -8,39 +8,48 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ECommerce.Web.styles.css" asp-append-version="true" />
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
             <div class="container">
-                <a class="navbar-brand fw-bold" asp-controller="Products" asp-action="Index">
-                    <i class="fas fa-store me-2"></i>
-                    E-Commerce Store
+                <a class="navbar-brand fw-bold animate__animated animate__fadeInLeft" asp-controller="Products" asp-action="Index">
+                    <i class="fas fa-gem me-2"></i>
+                    <span class="text-gradient-white">EliteShop</span>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
+                    <ul class="navbar-nav me-auto ms-lg-4">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Products" asp-action="Index">
-                                <i class="fas fa-home me-1"></i>
-                                Products
+                            <a class="nav-link px-3" asp-controller="Products" asp-action="Index">
+                                <i class="fas fa-shopping-bag me-2"></i>
+                                Shop
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Products" asp-action="Create">
-                                <i class="fas fa-plus me-1"></i>
-                                Add Product
+                            <a class="nav-link px-3" asp-controller="Products" asp-action="Create">
+                                <i class="fas fa-plus-circle me-2"></i>
+                                New Product
                             </a>
                         </li>
                     </ul>
-                    <ul class="navbar-nav">
+                    <ul class="navbar-nav align-items-center">
                         <li class="nav-item">
-                            <span class="navbar-text">
-                                <i class="fas fa-user-graduate me-1"></i>
-                                Student: QE180214
+                            <span class="navbar-text text-white px-3 d-flex align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-white bg-opacity-25 rounded-circle p-2 me-2">
+                                        <i class="fas fa-user-graduate"></i>
+                                    </div>
+                                    <div class="d-flex flex-column align-items-start">
+                                        <small class="opacity-75" style="font-size: 0.7rem;">Student ID</small>
+                                        <span class="fw-bold" style="font-size: 0.9rem;">QE180214</span>
+                                    </div>
+                                </div>
                             </span>
                         </li>
                     </ul>
@@ -49,24 +58,57 @@
         </nav>
     </header>
     
-    <main role="main" class="flex-grow-1">
+    <main role="main" class="flex-grow-1 py-4">
         @RenderBody()
     </main>
 
-    <footer class="bg-dark text-light mt-5 py-4">
+    <footer class="bg-dark text-light py-4 mt-auto">
         <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h6 class="fw-bold">E-Commerce Assignment</h6>
-                    <p class="mb-0">CRUD REST API + UI Implementation</p>
-                    <small class="text-muted">Built with .NET 8, Bootstrap 5, and PostgreSQL</small>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <p class="mb-0">
-                        <i class="fas fa-graduation-cap me-1"></i>
-                        Student ID: QE180214
+            <div class="row align-items-center">
+                <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-gem fa-2x me-3 text-gradient-white"></i>
+                        <div>
+                            <h6 class="fw-bold mb-0">EliteShop</h6>
+                            <small class="text-muted">Premium E-Commerce</small>
+                        </div>
+                    </div>
+                    <p class="mb-0 small text-muted">
+                        Modern CRUD REST API + UI Implementation
                     </p>
-                    <small class="text-muted">&copy; 2025 Assignment 1</small>
+                </div>
+                <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
+                    <h6 class="fw-bold mb-2">
+                        <i class="fas fa-code me-2"></i>
+                        Technology Stack
+                    </h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-light text-dark">.NET 8</span>
+                        <span class="badge bg-light text-dark">Bootstrap 5</span>
+                        <span class="badge bg-light text-dark">PostgreSQL</span>
+                        <span class="badge bg-light text-dark">Docker</span>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <div class="mb-2">
+                        <i class="fas fa-graduation-cap me-2"></i>
+                        <span class="fw-bold">Student ID: QE180214</span>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        <span>Assignment 1 - 2025</span>
+                    </div>
+                    <small class="text-muted d-block">
+                        &copy; 2025 All Rights Reserved
+                    </small>
+                </div>
+            </div>
+            <hr class="my-3 border-secondary opacity-25" />
+            <div class="row">
+                <div class="col-12 text-center">
+                    <small class="text-muted">
+                        Built with <i class="fas fa-heart text-danger"></i> for educational purposes
+                    </small>
                 </div>
             </div>
         </div>
@@ -76,5 +118,14 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    
+    <style>
+        .text-gradient-white {
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
 </body>
 </html>

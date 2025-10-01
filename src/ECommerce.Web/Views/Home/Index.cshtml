@@ -1,8 +1,213 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Welcome to EliteShop";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container-fluid px-4">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg overflow-hidden animate__animated animate__fadeIn">
+                <div class="position-relative" style="background: var(--primary-gradient); min-height: 500px;">
+                    <div class="position-absolute top-0 start-0 w-100 h-100" 
+                         style="background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1200 120\"><path d=\"M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z\" opacity=\".25\" fill=\"%23ffffff\"/></svg>') repeat-x bottom; opacity: 0.1;">
+                    </div>
+                    <div class="card-body p-5 position-relative" style="z-index: 2;">
+                        <div class="row align-items-center">
+                            <div class="col-lg-7 text-white mb-4 mb-lg-0">
+                                <div class="animate__animated animate__fadeInLeft">
+                                    <h1 class="display-2 fw-bold mb-4">
+                                        Welcome to <span class="text-gradient-white">EliteShop</span>
+                                    </h1>
+                                    <p class="lead mb-4 fs-3">
+                                        Your Premium E-Commerce Platform
+                                    </p>
+                                    <p class="fs-5 mb-4 opacity-90">
+                                        A modern CRUD REST API + UI implementation showcasing best practices in web development with .NET 8, Bootstrap 5, and PostgreSQL.
+                                    </p>
+                                    <div class="d-flex gap-3 flex-wrap">
+                                        <a asp-controller="Products" asp-action="Index" class="btn btn-light btn-lg px-5 shadow">
+                                            <i class="fas fa-shopping-bag me-2"></i>
+                                            Browse Products
+                                        </a>
+                                        <a asp-controller="Products" asp-action="Create" class="btn btn-outline-light btn-lg px-5">
+                                            <i class="fas fa-plus-circle me-2"></i>
+                                            Add Product
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-5">
+                                <div class="animate__animated animate__fadeInRight" style="animation-delay: 0.2s;">
+                                    <div class="bg-white bg-opacity-10 backdrop-blur rounded-4 p-4 shadow-lg">
+                                        <h4 class="text-white fw-bold mb-4">
+                                            <i class="fas fa-chart-line me-2"></i>
+                                            Quick Stats
+                                        </h4>
+                                        <div class="row g-3 text-white">
+                                            <div class="col-6">
+                                                <div class="bg-white bg-opacity-10 rounded-3 p-3 text-center">
+                                                    <i class="fas fa-box fa-2x mb-2"></i>
+                                                    <h3 class="fw-bold mb-0">Full</h3>
+                                                    <small>CRUD Operations</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="bg-white bg-opacity-10 rounded-3 p-3 text-center">
+                                                    <i class="fas fa-database fa-2x mb-2"></i>
+                                                    <h3 class="fw-bold mb-0">REST</h3>
+                                                    <small>API Integration</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="bg-white bg-opacity-10 rounded-3 p-3 text-center">
+                                                    <i class="fas fa-paint-brush fa-2x mb-2"></i>
+                                                    <h3 class="fw-bold mb-0">Modern</h3>
+                                                    <small>UI Design</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="bg-white bg-opacity-10 rounded-3 p-3 text-center">
+                                                    <i class="fas fa-mobile-alt fa-2x mb-2"></i>
+                                                    <h3 class="fw-bold mb-0">Responsive</h3>
+                                                    <small>All Devices</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row mb-5">
+        <div class="col-12 mb-4 text-center">
+            <h2 class="display-5 fw-bold mb-3">Key Features</h2>
+            <p class="text-muted lead">Everything you need for a complete e-commerce experience</p>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100 hover-lift animate__animated animate__fadeInUp">
+                <div class="card-body p-4 text-center">
+                    <div class="mb-4">
+                        <div class="bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center" 
+                             style="width: 80px; height: 80px; background: var(--success-gradient);">
+                            <i class="fas fa-code fa-2x text-white"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-3">Clean Code Architecture</h4>
+                    <p class="text-muted">
+                        Built with modern .NET 8 following best practices, SOLID principles, and clean architecture patterns.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100 hover-lift animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+                <div class="card-body p-4 text-center">
+                    <div class="mb-4">
+                        <div class="bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center" 
+                             style="width: 80px; height: 80px; background: var(--primary-gradient);">
+                            <i class="fas fa-rocket fa-2x text-white"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-3">High Performance</h4>
+                    <p class="text-muted">
+                        Optimized for speed with async operations, efficient database queries, and modern frontend techniques.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100 hover-lift animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                <div class="card-body p-4 text-center">
+                    <div class="mb-4">
+                        <div class="bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center" 
+                             style="width: 80px; height: 80px; background: var(--warning-gradient);">
+                            <i class="fas fa-shield-alt fa-2x text-white"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-3">Secure & Reliable</h4>
+                    <p class="text-muted">
+                        Built with security in mind, featuring input validation, error handling, and data protection.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technology Stack Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body p-5 text-white">
+                    <div class="text-center mb-4">
+                        <h2 class="display-6 fw-bold mb-3">Powered By Modern Technologies</h2>
+                        <p class="lead opacity-90">Built with industry-leading tools and frameworks</p>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-md-3 col-6 text-center">
+                            <div class="bg-white bg-opacity-10 rounded-3 p-4">
+                                <i class="fab fa-microsoft fa-3x mb-3"></i>
+                                <h5 class="fw-bold">.NET 8</h5>
+                                <small class="opacity-75">Backend Framework</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 text-center">
+                            <div class="bg-white bg-opacity-10 rounded-3 p-4">
+                                <i class="fab fa-bootstrap fa-3x mb-3"></i>
+                                <h5 class="fw-bold">Bootstrap 5</h5>
+                                <small class="opacity-75">CSS Framework</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 text-center">
+                            <div class="bg-white bg-opacity-10 rounded-3 p-4">
+                                <i class="fas fa-database fa-3x mb-3"></i>
+                                <h5 class="fw-bold">PostgreSQL</h5>
+                                <small class="opacity-75">Database</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 text-center">
+                            <div class="bg-white bg-opacity-10 rounded-3 p-4">
+                                <i class="fab fa-docker fa-3x mb-3"></i>
+                                <h5 class="fw-bold">Docker</h5>
+                                <small class="opacity-75">Containerization</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5 text-center">
+                    <h2 class="display-6 fw-bold mb-4">Ready to Get Started?</h2>
+                    <p class="lead text-muted mb-4">Explore the product catalog or add your first product now!</p>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a asp-controller="Products" asp-action="Index" class="btn btn-primary btn-lg px-5 shadow">
+                            <i class="fas fa-shopping-bag me-2"></i>
+                            View All Products
+                        </a>
+                        <a asp-controller="Products" asp-action="Create" class="btn btn-success btn-lg px-5 shadow">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            Create New Product
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .backdrop-blur {
+        backdrop-filter: blur(10px);
+    }
+</style>
