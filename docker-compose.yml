@@ -1,3 +1,19 @@
+# ============================================================================
+# Docker Compose Configuration for Local Development
+# ============================================================================
+# ⚠️  SECURITY NOTICE:
+# This configuration uses environment variables for sensitive data.
+# Default values are provided for convenience but can be overridden.
+#
+# USAGE:
+#   1. Copy .env.example to .env (if not exists)
+#   2. Modify .env with your local settings (optional)
+#   3. Run: docker-compose up -d
+#
+# For production deployment, use platform-specific environment variables
+# (Render.com, AWS, Azure, etc.) - DO NOT use this file in production.
+# ============================================================================
+
 version: '3.8'
 
 services:
@@ -6,11 +22,11 @@ services:
     image: postgres:13
     container_name: ecommerce-postgres-dev
     environment:
-      POSTGRES_DB: ecommerce
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: dev123
+      POSTGRES_DB: ${DB_NAME:-ecommerce}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -26,10 +42,10 @@ services:
       dockerfile: src/ECommerce.API/Dockerfile
     container_name: ecommerce-api-dev
     ports:
-      - "7246:8080"
+      - "${API_PORT:-7246}:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=ecommerce;Username=postgres;Password=dev123
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENV:-Development}
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${DB_NAME:-ecommerce};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-postgres}
     depends_on:
       postgres:
         condition: service_healthy
@@ -42,9 +58,9 @@ services:
       dockerfile: src/ECommerce.Web/Dockerfile
     container_name: ecommerce-web-dev
     ports:
-      - "5173:8080"
+      - "${WEB_PORT:-5173}:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENV:-Development}
       - ApiBaseUrl=http://api:8080/api
     depends_on:
       - api
