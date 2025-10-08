@@ -132,29 +132,38 @@ assignment-qe180214/
 
 ## 🔧 Local Development Setup
 
+> **📖 For detailed setup instructions, see [LOCAL_SETUP.md](LOCAL_SETUP.md)**
+
 ### Prerequisites
-- .NET 8 SDK
-- Docker Desktop
+- Docker Desktop installed and running
 - Git
 
-### Quick Start
+### Quick Start (3 Commands)
 
-1. **Clone Repository**
-   ```bash
-   git clone https://github.com/yourusername/ecommerce-assignment-qe180214.git
-   cd ecommerce-assignment-qe180214
-   ```
+```bash
+# 1. Clone repository
+git clone https://github.com/tsohigh254/ecommerce-assignment-qe180214.git
+cd ecommerce-assignment-qe180214
 
-2. **Start with Docker Compose**
-   ```bash
-   docker-compose up -d
-   ```
+# 2. Start all services (uses default configuration)
+docker-compose up -d
 
-3. **Access Applications**
-   - **Frontend:** http://localhost:5173
-   - **API:** http://localhost:7246
-   - **Swagger:** http://localhost:7246/swagger
-   - **Database:** localhost:5432
+# 3. Wait ~30 seconds for services to start, then access:
+```
+
+### Access Applications
+- **Frontend:** http://localhost:5173
+- **API:** http://localhost:7246
+- **Swagger Documentation:** http://localhost:7246/swagger
+- **Database:** localhost:5432
+
+### Stop Application
+```bash
+docker-compose down
+```
+
+### 🔒 Security Note
+This project uses **environment variables** for configuration. Default values are provided for convenience in local development. No sensitive credentials are hardcoded. See `.env.example` for customization options
 
 ### Manual Setup (Without Docker)
 
