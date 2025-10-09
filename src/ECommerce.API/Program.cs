@@ -7,9 +7,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // Add Entity Framework
+// Priority: Environment Variable -> Configuration -> Development Default
 var connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING") 
-    ?? builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? "Host=localhost;Database=ecommerce;Username=postgres;Password=dev123";
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Fallback for development only
+if (string.IsNullOrEmpty(connectionString) && builder.Environment.IsDevelopment())
+{
+    connectionString = "Host=localhost;Database=ecommerce;Username=postgres;Password=dev123";
+}
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("Database connection string not configured. Please set DATABASE_CONNECTION_STRING environment variable or DefaultConnection in configuration.");
+}
+
 builder.Services.AddDbContext<ECommerceDbContext>(options =>
     options.UseNpgsql(connectionString));
 

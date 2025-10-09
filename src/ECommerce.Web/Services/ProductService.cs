@@ -21,7 +21,11 @@ namespace ECommerce.Web.Services
         {
             _httpClient = httpClient;
             _logger = logger;
-            _baseUrl = configuration["ApiBaseUrl"] ?? "https://localhost:7246/api";
+            
+            // Priority: Environment Variable -> Configuration -> Development Default
+            _baseUrl = Environment.GetEnvironmentVariable("API_BASE_URL") 
+                ?? configuration["ApiBaseUrl"] 
+                ?? "https://localhost:7246/api";
         }
 
         public async Task<IEnumerable<Product>> GetProductsAsync()
