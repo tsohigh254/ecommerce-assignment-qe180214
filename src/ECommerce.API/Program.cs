@@ -11,10 +11,13 @@ builder.Services.AddControllers();
 var connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING") 
     ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Fallback for development only
+// Fallback for development only - use a clearly marked placeholder and require developers to set .env or environment variable
 if (string.IsNullOrEmpty(connectionString) && builder.Environment.IsDevelopment())
 {
-    connectionString = "Host=localhost;Database=ecommerce;Username=postgres;Password=dev123";
+    // Important: do NOT check in real credentials. Developers should create a local `.env` file
+    // or set the DATABASE_CONNECTION_STRING environment variable. This placeholder is intentionally
+    // non-secret and will not work for production.
+    connectionString = "Host=localhost;Database=ecommerce;Username=postgres;Password=changeme_local";
 }
 
 if (string.IsNullOrEmpty(connectionString))
