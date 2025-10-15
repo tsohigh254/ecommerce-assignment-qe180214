@@ -29,4 +29,4 @@ services:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
       - key: API_BASE_URL
-        value: https://ecommerce-api-qe180214.onrender.com
+        value: https://ecommerce-assignment-qe180214.onrender.com
