@@ -1,4 +1,6 @@
 using ECommerce.Core.Models;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http.Json;
 
 namespace ECommerce.Web.Services
 {
@@ -17,7 +19,10 @@ namespace ECommerce.Web.Services
         private readonly HttpClient _httpClient;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILogger<ProductService> _logger;
-        private readonly string _baseUrl;
+        // Loại bỏ _baseUrl, thay thế bằng _apiBasePath
+
+        // Base path cho API (luôn là "/api/"), để ghép nối với đường dẫn tương đối của API
+        private const string _apiBasePath = "/api/"; 
 
         public ProductService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor, 
             IConfiguration configuration, ILogger<ProductService> logger)
@@ -33,12 +38,23 @@ namespace ECommerce.Web.Services
             _logger.LogInformation("API_BASE_URL env var: {EnvVar}", envVar ?? "null");
             _logger.LogInformation("ApiSettings:BaseUrl config: {ConfigValue}", configValue ?? "null");
             
-            var baseUrl = envVar ?? configValue ?? "http://api:8080";
+            var baseUrlString = envVar ?? configValue ?? "http://api:8080";
             
-            // Ensure base URL ends with /api
-            _baseUrl = baseUrl.TrimEnd('/') + "/api";
-            
-            _logger.LogInformation("Final API Base URL: {BaseUrl}", _baseUrl);
+            // *** CẤU HÌNH QUAN TRỌNG: Thiết lập BaseAddress cho HttpClient ***
+            // BaseAddress phải là URI hợp lệ (ví dụ: https://example.com)
+            try
+            {
+                // BaseAddress chỉ nên là root URI, không bao gồm path như /api
+                _httpClient.BaseAddress = new Uri(baseUrlString.TrimEnd('/') + "/");
+                _logger.LogInformation("HttpClient BaseAddress set to: {BaseAddress}", _httpClient.BaseAddress);
+            }
+            catch (UriFormatException ex)
+            {
+                // Log lỗi và re-throw để ngăn chặn lỗi runtime
+                _logger.LogError(ex, "FATAL: Invalid URI format for API Base URL: {Url}", baseUrlString);
+                // Ném ngoại lệ để dừng ứng dụng nếu không có Base URL hợp lệ
+                throw; 
+            }
         }
 
         private void AddAuthorizationHeader()
@@ -74,14 +90,20 @@ namespace ECommerce.Web.Services
                 queryParams.Add($"pageSize={pageSize}");
                 
                 var queryString = string.Join("&", queryParams);
-                var response = await _httpClient.GetFromJsonAsync<ProductPagedResult>($"{_baseUrl}/products?{queryString}");
+                
+                // *** KHẮC PHỤC DÒNG 77: Sử dụng đường dẫn tương đối (Relative Path)
+                var relativePath = $"{_apiBasePath}products?{queryString}";
+                
+                // Gọi API sử dụng đường dẫn tương đối. HttpClient sẽ tự ghép với BaseAddress
+                var response = await _httpClient.GetFromJsonAsync<ProductPagedResult>(relativePath);
                 
                 return response ?? new ProductPagedResult();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching products");
-                return new ProductPagedResult();
+                // Giữ lại dòng này để trả về kết quả rỗng khi gặp lỗi
+                return new ProductPagedResult(); 
             }
         }
 
@@ -89,7 +111,8 @@ namespace ECommerce.Web.Services
         {
             try
             {
-                return await _httpClient.GetFromJsonAsync<Product>($"{_baseUrl}/products/{id}");
+                // Sử dụng đường dẫn tương đối
+                return await _httpClient.GetFromJsonAsync<Product>($"{_apiBasePath}products/{id}");
             }
             catch (Exception ex)
             {
@@ -121,7 +144,8 @@ namespace ECommerce.Web.Services
                     content.Add(streamContent, "ImageFile", imageFile.FileName);
                 }
                 
-                var response = await _httpClient.PostAsync($"{_baseUrl}/products", content);
+                // Sử dụng đường dẫn tương đối
+                var response = await _httpClient.PostAsync($"{_apiBasePath}products", content);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<Product>() ?? product;
             }
@@ -156,7 +180,8 @@ namespace ECommerce.Web.Services
                     content.Add(streamContent, "ImageFile", imageFile.FileName);
                 }
                 
-                var response = await _httpClient.PutAsync($"{_baseUrl}/products/{id}", content);
+                // Sử dụng đường dẫn tương đối
+                var response = await _httpClient.PutAsync($"{_apiBasePath}products/{id}", content);
                 response.EnsureSuccessStatusCode();
             }
             catch (Exception ex)
@@ -172,7 +197,8 @@ namespace ECommerce.Web.Services
             {
                 AddAuthorizationHeader();
                 
-                var response = await _httpClient.DeleteAsync($"{_baseUrl}/products/{id}");
+                // Sử dụng đường dẫn tương đối
+                var response = await _httpClient.DeleteAsync($"{_apiBasePath}products/{id}");
                 response.EnsureSuccessStatusCode();
             }
             catch (Exception ex)
