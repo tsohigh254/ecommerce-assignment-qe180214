@@ -71,7 +71,7 @@ public class WebhookController : ControllerBase
                 stripeEvent.Type, stripeEvent.Id);
 
             // Handle payment intent succeeded - Update order status
-            if (stripeEvent.Type == Events.PaymentIntentSucceeded)
+            if (stripeEvent.Type == "payment_intent.succeeded")
             {
                 var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
                 if (paymentIntent != null)
@@ -83,7 +83,7 @@ public class WebhookController : ControllerBase
                 }
             }
             // Handle payment intent payment failed
-            else if (stripeEvent.Type == Events.PaymentIntentPaymentFailed)
+            else if (stripeEvent.Type == "payment_intent.payment_failed")
             {
                 var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
                 if (paymentIntent != null)
@@ -95,7 +95,7 @@ public class WebhookController : ControllerBase
                 }
             }
             // Handle payment intent cancelled
-            else if (stripeEvent.Type == Events.PaymentIntentCanceled)
+            else if (stripeEvent.Type == "payment_intent.canceled")
             {
                 var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
                 if (paymentIntent != null)

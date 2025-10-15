@@ -193,7 +193,7 @@ public class StripePaymentService : IPaymentService
             _logger.LogInformation("Received Stripe webhook event: {EventType}", stripeEvent.Type);
 
             // Payment intent succeeded - this is the main event we care about
-            if (stripeEvent.Type == Events.PaymentIntentSucceeded)
+            if (stripeEvent.Type == "payment_intent.succeeded")
             {
                 var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
                 if (paymentIntent != null)
@@ -209,7 +209,7 @@ public class StripePaymentService : IPaymentService
                 }
             }
             // Payment intent payment failed
-            else if (stripeEvent.Type == Events.PaymentIntentPaymentFailed)
+            else if (stripeEvent.Type == "payment_intent.payment_failed")
             {
                 var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
                 if (paymentIntent != null)
@@ -222,7 +222,7 @@ public class StripePaymentService : IPaymentService
                 }
             }
             // Payment intent created
-            else if (stripeEvent.Type == Events.PaymentIntentCreated)
+            else if (stripeEvent.Type == "payment_intent.created")
             {
                 var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
                 if (paymentIntent != null)
