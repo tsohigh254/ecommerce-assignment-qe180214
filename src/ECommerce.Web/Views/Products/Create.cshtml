@@ -32,7 +32,7 @@
                     </div>
                 </div>
                 <div class="card-body p-4 p-md-5">
-                    <form asp-action="Create" method="post" id="createForm">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data" id="createForm">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 shadow-sm" role="alert"></div>
                         
                         <!-- Product Name -->
@@ -78,23 +78,32 @@
                                 <span asp-validation-for="Price" class="text-danger small"></span>
                             </div>
                             
-                            <!-- Image URL -->
+                            <!-- Image Upload -->
                             <div class="col-md-6 mb-4">
-                                <label asp-for="ImageUrl" class="form-label fw-bold d-flex align-items-center">
-                                    <i class="fas fa-image me-2 text-info"></i>
-                                    Image URL
+                                <label class="form-label fw-bold d-flex align-items-center">
+                                    <i class="fas fa-upload me-2 text-info"></i>
+                                    Product Image
                                 </label>
-                                <div class="input-group input-group-lg shadow-sm">
-                                    <span class="input-group-text bg-white">
-                                        <i class="fas fa-link"></i>
-                                    </span>
-                                    <input asp-for="ImageUrl" class="form-control" type="url" placeholder="https://...">
-                                </div>
-                                <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                                <input type="file" class="form-control form-control-lg shadow-sm" 
+                                       id="imageFile" name="ImageFile" accept="image/*">
                                 <div class="form-text">
-                                    <i class="fas fa-lightbulb me-1"></i>
-                                    Optional: Direct image URL for better display
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Upload an image (JPG, PNG, GIF, WebP - Max 5MB)
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Alternative: Image URL -->
+                        <div class="mb-4">
+                            <label asp-for="ImageUrl" class="form-label fw-bold d-flex align-items-center">
+                                <i class="fas fa-link me-2 text-info"></i>
+                                Or Enter Image URL
+                            </label>
+                            <input asp-for="ImageUrl" class="form-control shadow-sm" type="url" placeholder="https://example.com/image.jpg">
+                            <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                            <div class="form-text">
+                                <i class="fas fa-lightbulb me-1"></i>
+                                Optional: Use direct image URL instead of uploading
                             </div>
                         </div>
 
@@ -150,13 +159,33 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     
     <script>
+        // Image file preview
+        document.getElementById('imageFile').addEventListener('change', function(e) {
+            var file = e.target.files[0];
+            var preview = document.getElementById('imagePreview');
+            var img = document.getElementById('previewImg');
+            
+            if (file && file.type.startsWith('image/')) {
+                var reader = new FileReader();
+                reader.onload = function(event) {
+                    img.src = event.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+        
         // Image URL preview
         document.getElementById('ImageUrl').addEventListener('input', function() {
             var url = this.value;
             var preview = document.getElementById('imagePreview');
             var img = document.getElementById('previewImg');
             
-            if (url && isValidUrl(url)) {
+            // Only show URL preview if no file is selected
+            var fileInput = document.getElementById('imageFile');
+            if (fileInput.files.length === 0 && url && isValidUrl(url)) {
                 img.src = url;
                 img.onload = function() {
                     preview.style.display = 'block';
@@ -164,7 +193,7 @@
                 img.onerror = function() {
                     preview.style.display = 'none';
                 };
-            } else {
+            } else if (fileInput.files.length === 0) {
                 preview.style.display = 'none';
             }
         });

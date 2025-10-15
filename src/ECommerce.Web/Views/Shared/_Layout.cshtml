@@ -31,15 +31,90 @@
                                 Shop
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link px-3" asp-controller="Products" asp-action="Create">
-                                <i class="fas fa-plus-circle me-2"></i>
-                                New Product
-                            </a>
-                        </li>
+                        @if (Context.Session.GetString("JWTToken") != null)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link px-3" asp-controller="Products" asp-action="Create">
+                                    <i class="fas fa-plus-circle me-2"></i>
+                                    New Product
+                                </a>
+                            </li>
+                        }
                     </ul>
                     <ul class="navbar-nav align-items-center">
-                        <li class="nav-item">
+                        @if (Context.Session.GetString("JWTToken") != null)
+                        {
+                            <!-- Cart Link with Badge -->
+                            <li class="nav-item me-2">
+                                <a class="nav-link position-relative" asp-controller="Cart" asp-action="Index">
+                                    <i class="fas fa-shopping-cart fa-lg"></i>
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
+                                          id="cart-badge" style="font-size: 0.6rem;">
+                                        0
+                                    </span>
+                                </a>
+                            </li>
+                            
+                            <!-- Orders Link -->
+                            <li class="nav-item me-2">
+                                <a class="nav-link" asp-controller="Orders" asp-action="Index" title="My Orders">
+                                    <i class="fas fa-box fa-lg"></i>
+                                </a>
+                            </li>
+                            
+                            <!-- User Dropdown -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" 
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="bg-white bg-opacity-25 rounded-circle p-2 me-2">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <span class="d-none d-md-inline">@Context.Session.GetString("UserEmail")</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Orders" asp-action="Index">
+                                            <i class="fas fa-box me-2"></i>
+                                            My Orders
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Cart" asp-action="Index">
+                                            <i class="fas fa-shopping-cart me-2"></i>
+                                            My Cart
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-sign-out-alt me-2"></i>
+                                                Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <!-- Login/Register Links -->
+                            <li class="nav-item">
+                                <a class="nav-link px-3" asp-controller="Account" asp-action="Login">
+                                    <i class="fas fa-sign-in-alt me-2"></i>
+                                    Login
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-light btn-sm ms-2" asp-controller="Account" asp-action="Register">
+                                    <i class="fas fa-user-plus me-2"></i>
+                                    Register
+                                </a>
+                            </li>
+                        }
+                        
+                        <!-- Student ID Badge -->
+                        <li class="nav-item ms-3">
                             <span class="navbar-text text-white px-3 d-flex align-items-center">
                                 <div class="d-flex align-items-center">
                                     <div class="bg-white bg-opacity-25 rounded-circle p-2 me-2">
@@ -117,6 +192,41 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <!-- Cart Badge Update Script -->
+    <script>
+        // Update cart badge on page load
+        $(document).ready(function() {
+            updateCartBadge();
+        });
+
+        function updateCartBadge() {
+            @if (Context.Session.GetString("JWTToken") != null)
+            {
+                <text>
+                $.ajax({
+                    url: '/Cart/GetCartItemCount',
+                    type: 'GET',
+                    success: function(count) {
+                        var badge = $('#cart-badge');
+                        if (count > 0) {
+                            badge.text(count).show();
+                        } else {
+                            badge.text('0').hide();
+                        }
+                    },
+                    error: function() {
+                        $('#cart-badge').text('0').hide();
+                    }
+                });
+                </text>
+            }
+        }
+
+        // Call this function after adding items to cart
+        window.updateCartBadge = updateCartBadge;
+    </script>
+    
     @await RenderSectionAsync("Scripts", required: false)
     
     <style>

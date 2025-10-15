@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using ECommerce.Core.Models;
 
 namespace ECommerce.API.Data
 {
-    public class ECommerceDbContext : DbContext
+    public class ECommerceDbContext : IdentityDbContext<User>
     {
         public ECommerceDbContext(DbContextOptions<ECommerceDbContext> options)
             : base(options)
@@ -11,6 +12,10 @@ namespace ECommerce.API.Data
         }
 
         public DbSet<Product> Products { get; set; }
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -26,6 +31,73 @@ namespace ECommerce.API.Data
                 entity.Property(e => e.ImageUrl).HasMaxLength(2083); // Max URL length
                 entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
                 entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
+
+            // Configure Cart entity
+            modelBuilder.Entity<Cart>(entity =>
+            {
+                entity.HasKey(e => e.CartId);
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.Carts)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure CartItem entity
+            modelBuilder.Entity<CartItem>(entity =>
+            {
+                entity.HasKey(e => e.CartItemId);
+                entity.Property(e => e.Quantity).IsRequired();
+                entity.Property(e => e.DateAdded).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                entity.HasOne(e => e.Cart)
+                    .WithMany(c => c.CartItems)
+                    .HasForeignKey(e => e.CartId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Product)
+                    .WithMany()
+                    .HasForeignKey(e => e.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure Order entity
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.HasKey(e => e.OrderId);
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.TotalAmount).HasColumnType("decimal(18,2)").IsRequired();
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.OrderDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+                
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.Orders)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure OrderItem entity
+            modelBuilder.Entity<OrderItem>(entity =>
+            {
+                entity.HasKey(e => e.OrderItemId);
+                entity.Property(e => e.Quantity).IsRequired();
+                entity.Property(e => e.Price).HasColumnType("decimal(18,2)").IsRequired();
+                
+                entity.HasOne(e => e.Order)
+                    .WithMany(o => o.OrderItems)
+                    .HasForeignKey(e => e.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.HasOne(e => e.Product)
+                    .WithMany()
+                    .HasForeignKey(e => e.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Seed data

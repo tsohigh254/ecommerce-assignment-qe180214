@@ -16,10 +16,22 @@ namespace ECommerce.Web.Controllers
         }
 
         // GET: Products
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? searchTerm, 
+            decimal? minPrice, 
+            decimal? maxPrice, 
+            string? sortBy, 
+            int pageNumber = 1)
         {
-            var products = await _productService.GetProductsAsync();
-            return View(products);
+            var result = await _productService.GetProductsAsync(searchTerm, minPrice, maxPrice, sortBy, pageNumber);
+            
+            // Pass filter values to view for form persistence
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.MinPrice = minPrice;
+            ViewBag.MaxPrice = maxPrice;
+            ViewBag.SortBy = sortBy;
+            
+            return View(result);
         }
 
         // GET: Products/Details/5
@@ -42,20 +54,20 @@ namespace ECommerce.Web.Controllers
         // POST: Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Product product)
+        public async Task<IActionResult> Create(Product product, IFormFile? ImageFile)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    await _productService.CreateProductAsync(product);
+                    await _productService.CreateProductAsync(product, ImageFile);
                     TempData["SuccessMessage"] = "Product created successfully!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error creating product");
-                    TempData["ErrorMessage"] = "Error creating product. Please try again.";
+                    TempData["ErrorMessage"] = $"Error creating product: {ex.Message}";
                 }
             }
             return View(product);

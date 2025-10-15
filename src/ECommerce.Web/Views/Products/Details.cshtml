@@ -110,24 +110,57 @@
 
                         <!-- Action Buttons -->
                         <div class="d-grid gap-3">
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-lg shadow">
-                                <i class="fas fa-edit me-2"></i>
-                                Edit Product
-                            </a>
-                            <div class="row g-3">
-                                <div class="col-6">
-                                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-lg w-100">
-                                        <i class="fas fa-trash me-2"></i>
-                                        Delete
-                                    </a>
+                            @if (Context.Session.GetString("JWTToken") != null)
+                            {
+                                <!-- Add to Cart Button (Primary Action) -->
+                                <form asp-controller="Cart" asp-action="Add" method="post" class="add-to-cart-form">
+                                    <input type="hidden" name="productId" value="@Model.Id" />
+                                    <div class="input-group mb-3">
+                                        <span class="input-group-text">Quantity</span>
+                                        <input type="number" name="quantity" class="form-control" value="1" min="1" max="99" />
+                                        <button type="submit" class="btn btn-primary btn-lg flex-grow-1">
+                                            <i class="fas fa-cart-plus me-2"></i>
+                                            Add to Cart
+                                        </button>
+                                    </div>
+                                </form>
+                                
+                                <!-- Edit/Delete Buttons (Admin Actions) -->
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-lg shadow">
+                                    <i class="fas fa-edit me-2"></i>
+                                    Edit Product
+                                </a>
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-lg w-100">
+                                            <i class="fas fa-trash me-2"></i>
+                                            Delete
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <a asp-action="Index" class="btn btn-outline-primary btn-lg w-100">
+                                            <i class="fas fa-arrow-left me-2"></i>
+                                            Back
+                                        </a>
+                                    </div>
                                 </div>
-                                <div class="col-6">
-                                    <a asp-action="Index" class="btn btn-outline-primary btn-lg w-100">
-                                        <i class="fas fa-arrow-left me-2"></i>
-                                        Back
-                                    </a>
+                            }
+                            else
+                            {
+                                <!-- Login to Purchase -->
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Please login to add items to cart
                                 </div>
-                            </div>
+                                <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-sign-in-alt me-2"></i>
+                                    Login to Purchase
+                                </a>
+                                <a asp-action="Index" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    Back to Products
+                                </a>
+                            }
                         </div>
                     </div>
                 </div>

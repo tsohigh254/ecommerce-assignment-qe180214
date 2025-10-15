@@ -1,0 +1,172 @@
+@{
+    ViewData["Title"] = "Payment Failed";
+    var errorMessage = ViewBag.ErrorMessage as string ?? "Your payment could not be processed. Please try again.";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Error Message -->
+            <div class="text-center mb-4">
+                <div class="mb-3">
+                    <i class="bi bi-x-circle-fill text-danger" style="font-size: 5rem;"></i>
+                </div>
+                <h1 class="display-4 text-danger">Payment Failed</h1>
+                <p class="lead text-muted">We encountered an issue processing your payment.</p>
+            </div>
+
+            <!-- Error Details Card -->
+            <div class="card shadow-sm mb-4 border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Error Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger mb-0" role="alert">
+                        <h6 class="alert-heading">Payment Error</h6>
+                        <p class="mb-0">@errorMessage</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Common Reasons -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-question-circle"></i> Common Reasons for Payment Failure
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-muted"></i>
+                            Insufficient funds in your account
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-muted"></i>
+                            Incorrect card details (number, expiry date, or CVV)
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-muted"></i>
+                            Card expired or inactive
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-muted"></i>
+                            Bank declined the transaction
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-muted"></i>
+                            Network or connection issues
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- What to Do Next -->
+            <div class="card mb-4 border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightbulb"></i> What Should I Do?
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li class="mb-2">
+                            <strong>Check your payment details</strong> - Ensure your card information is correct
+                        </li>
+                        <li class="mb-2">
+                            <strong>Contact your bank</strong> - They can provide specific information about why the payment was declined
+                        </li>
+                        <li class="mb-2">
+                            <strong>Try a different payment method</strong> - Use another card or payment option
+                        </li>
+                        <li class="mb-2">
+                            <strong>Wait a few minutes</strong> - Sometimes temporary issues resolve themselves
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Test Card Information (Development Only) -->
+            @if (ViewContext.HttpContext.Request.Host.Host.Contains("localhost"))
+            {
+                <div class="card mb-4 border-warning">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0">
+                            <i class="bi bi-code-slash"></i> Test Card Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2"><strong>For testing, use these test cards:</strong></p>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Card Number</th>
+                                        <th>Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>4242 4242 4242 4242</code></td>
+                                        <td><span class="badge bg-success">Success</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>4000 0000 0000 0002</code></td>
+                                        <td><span class="badge bg-danger">Declined</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>4000 0000 0000 9995</code></td>
+                                        <td><span class="badge bg-warning">Insufficient Funds</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-info-circle"></i> 
+                            Use any future expiry date and any 3-digit CVV
+                        </p>
+                    </div>
+                </div>
+            }
+
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center mb-4">
+                <a href="@Url.Action("Checkout", "Cart")" class="btn btn-primary btn-lg">
+                    <i class="bi bi-arrow-clockwise"></i> Try Again
+                </a>
+                <a href="@Url.Action("Index", "Cart")" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-cart"></i> Back to Cart
+                </a>
+            </div>
+
+            <!-- Help Section -->
+            <div class="card bg-light">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Need Help?</h5>
+                    <p class="card-text text-muted mb-3">
+                        If you continue to experience issues, please contact our support team.
+                    </p>
+                    <a href="@Url.Action("Index", "Products")" class="btn btn-link">
+                        <i class="bi bi-shop"></i> Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-hide any alert messages after 10 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                if (alert.classList.contains('alert-dismissible')) {
+                    alert.classList.add('fade');
+                }
+            });
+        }, 10000);
+    </script>
+}

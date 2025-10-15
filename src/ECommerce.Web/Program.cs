@@ -5,9 +5,28 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Add Session support
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 // Add HttpClient for API calls
+builder.Services.AddHttpClient();
+builder.Services.AddHttpContextAccessor();
+
+// Register services
 builder.Services.AddHttpClient<ProductService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddHttpClient<IPaymentService, PaymentService>(client =>
+{
+    var apiUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "http://api:8080";
+    client.BaseAddress = new Uri(apiUrl);
+});
 
 var app = builder.Build();
 
@@ -26,10 +45,18 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// Only use HTTPS redirection in production
+if (app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Add Session middleware (must be before UseAuthorization)
+app.UseSession();
 
 app.UseAuthorization();
 

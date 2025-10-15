@@ -1,0 +1,90 @@
+@model List<ECommerce.Web.Models.OrderViewModel>
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">
+        <i class="bi bi-box-seam"></i> My Orders
+    </h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            <h4>No orders yet</h4>
+            <p>You haven't placed any orders yet. Start shopping to see your orders here.</p>
+            <a href="@Url.Action("Index", "Products")" class="btn btn-primary">
+                <i class="bi bi-shop"></i> Start Shopping
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Order Date</th>
+                        <th>Items</th>
+                        <th>Total Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>#@order.OrderId</strong>
+                            </td>
+                            <td>
+                                @order.OrderDate.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt")
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">@order.TotalItems item(s)</span>
+                            </td>
+                            <td>
+                                <strong>$@order.TotalAmount.ToString("F2")</strong>
+                            </td>
+                            <td>
+                                <span class="@order.StatusBadgeClass">
+                                    @order.Status
+                                </span>
+                            </td>
+                            <td>
+                                <a href="@Url.Action("Details", "Orders", new { id = order.OrderId })" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4">
+            <a href="@Url.Action("Index", "Products")" class="btn btn-primary">
+                <i class="bi bi-shop"></i> Continue Shopping
+            </a>
+        </div>
+    }
+</div>

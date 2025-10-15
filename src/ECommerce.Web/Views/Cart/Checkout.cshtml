@@ -1,0 +1,246 @@
+@model ECommerce.Web.Models.CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="container mt-4">
+    <h1 class="mb-4">
+        <i class="bi bi-credit-card"></i> Checkout
+    </h1>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Order Review</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="mb-3">Items in Your Order:</h6>
+                    @foreach (var item in Model.Cart.Items)
+                    {
+                        <div class="row mb-3 pb-3 border-bottom">
+                            <div class="col-md-2">
+                                @if (!string.IsNullOrEmpty(item.ProductImageUrl))
+                                {
+                                    <img src="@item.ProductImageUrl" class="img-fluid rounded" alt="@item.ProductName" style="max-height: 80px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="bg-secondary rounded d-flex align-items-center justify-content-center" style="height: 80px;">
+                                        <i class="bi bi-image text-white" style="font-size: 1.5rem;"></i>
+                                    </div>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <h6>@item.ProductName</h6>
+                                <p class="text-muted mb-0">$@item.ProductPrice.ToString("F2") x @item.Quantity</p>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <strong>$@item.Subtotal.ToString("F2")</strong>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Shipping Information</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-info-circle"></i> Your order will be processed and shipped to your registered address.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Items (@Model.Cart.TotalItems):</span>
+                        <span>$@Model.Cart.TotalAmount.ToString("F2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Shipping:</span>
+                        <span class="text-success">FREE</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tax:</span>
+                        <span>$0.00</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total:</strong>
+                        <strong class="text-success">$@Model.Cart.TotalAmount.ToString("F2")</strong>
+                    </div>
+
+                    <!-- Stripe Payment Form -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-credit-card"></i> Payment Information</h6>
+                        </div>
+                        <div class="card-body">
+                            <form id="payment-form">
+                                <div id="payment-element" class="mb-3">
+                                    <!-- Stripe Elements will be inserted here -->
+                                </div>
+                                <div id="payment-message" class="alert alert-danger d-none"></div>
+                                <button id="submit-button" type="submit" class="btn btn-success btn-lg w-100 mb-2">
+                                    <span id="button-text">
+                                        <i class="bi bi-lock-fill"></i> Pay Now - $@Model.Cart.TotalAmount.ToString("F2")
+                                    </span>
+                                    <span id="spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <a href="@Url.Action("Index", "Cart")" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-left"></i> Back to Cart
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-shield-check"></i> Secure Checkout
+                    </h6>
+                    <p class="card-text small text-muted">
+                        Your payment information is processed securely via Stripe. We do not store credit card details.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+    
+    <script>
+        // Initialize Stripe
+        const stripe = Stripe('@Model.PublishableKey');
+        
+        const options = {
+            clientSecret: '@Model.ClientSecret',
+            appearance: {
+                theme: 'stripe',
+                variables: {
+                    colorPrimary: '#198754',
+                }
+            }
+        };
+        
+        // Set up Stripe.js and Elements to use in checkout form
+        const elements = stripe.elements(options);
+        
+        // Create Payment Element with billing details
+        const paymentElement = elements.create('payment', {
+            layout: {
+                type: 'accordion',
+                defaultCollapsed: false,
+                radios: false,
+                spacedAccordionItems: true
+            },
+            fields: {
+                billingDetails: {
+                    address: {
+                        postalCode: 'auto'
+                    }
+                }
+            }
+        });
+        
+        paymentElement.mount('#payment-element');
+        
+        // Handle form submission
+        const form = document.getElementById('payment-form');
+        const submitButton = document.getElementById('submit-button');
+        const buttonText = document.getElementById('button-text');
+        const spinner = document.getElementById('spinner');
+        const messageContainer = document.getElementById('payment-message');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            setLoading(true);
+            
+            try {
+                // Confirm the payment
+                const {error, paymentIntent} = await stripe.confirmPayment({
+                    elements,
+                    confirmParams: {
+                        return_url: window.location.origin + '/Cart/PaymentSuccess',
+                    },
+                    redirect: 'if_required'
+                });
+                
+                if (error) {
+                    // Payment failed
+                    showMessage(error.message);
+                    setLoading(false);
+                } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+                    // Payment succeeded - process order
+                    await processOrder(paymentIntent.id);
+                } else {
+                    showMessage('Payment processing. Please wait...');
+                }
+            } catch (err) {
+                showMessage('An unexpected error occurred.');
+                setLoading(false);
+            }
+        });
+        
+        async function processOrder(paymentIntentId) {
+            try {
+                const response = await fetch('/Cart/ProcessPayment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ paymentIntentId: paymentIntentId })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Redirect to success page
+                    window.location.href = `/Cart/PaymentSuccess?orderId=${result.orderId}`;
+                } else {
+                    showMessage(result.message || 'Failed to create order');
+                    setLoading(false);
+                }
+            } catch (error) {
+                showMessage('Failed to process order. Please contact support.');
+                setLoading(false);
+            }
+        }
+        
+        function showMessage(messageText) {
+            messageContainer.classList.remove('d-none');
+            messageContainer.textContent = messageText;
+            
+            setTimeout(() => {
+                messageContainer.classList.add('d-none');
+            }, 5000);
+        }
+        
+        function setLoading(isLoading) {
+            if (isLoading) {
+                submitButton.disabled = true;
+                buttonText.classList.add('d-none');
+                spinner.classList.remove('d-none');
+            } else {
+                submitButton.disabled = false;
+                spinner.classList.add('d-none');
+                buttonText.classList.remove('d-none');
+            }
+        }
+    </script>
+}

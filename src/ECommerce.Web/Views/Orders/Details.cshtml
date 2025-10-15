@@ -1,0 +1,374 @@
+@model ECommerce.Web.Models.OrderViewModel
+@{
+    ViewData["Title"] = $"Order #{Model.Id} - Details";
+}
+
+<div class="container mt-4 animate__animated animate__fadeIn">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index" asp-controller="Orders">My Orders</a></li>
+            <li class="breadcrumb-item active">Order #@Model.Id</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <h1 class="fw-bold mb-2">
+                <i class="fas fa-receipt me-2 text-primary"></i>
+                Order #@Model.Id
+            </h1>
+            <p class="text-muted mb-0">
+                <i class="far fa-calendar-alt me-2"></i>
+                Placed on @Model.CreatedAt.ToString("MMMM dd, yyyy 'at' hh:mm tt")
+            </p>
+        </div>
+        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+            @{
+                var statusClass = Model.Status.ToLower() switch
+                {
+                    "pending" => "bg-warning text-dark",
+                    "processing" => "bg-info text-white",
+                    "shipped" => "bg-primary text-white",
+                    "delivered" => "bg-success text-white",
+                    "cancelled" => "bg-danger text-white",
+                    _ => "bg-secondary text-white"
+                };
+                var statusIcon = Model.Status.ToLower() switch
+                {
+                    "pending" => "fa-clock",
+                    "processing" => "fa-spinner",
+                    "shipped" => "fa-truck",
+                    "delivered" => "fa-check-circle",
+                    "cancelled" => "fa-times-circle",
+                    _ => "fa-question-circle"
+                };
+            }
+            <span class="badge @statusClass px-4 py-3 fs-5 shadow">
+                <i class="fas @statusIcon me-2"></i>
+                @Model.Status
+            </span>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show animate__animated animate__fadeInDown" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Order Items -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-shopping-bag me-2 text-primary"></i>
+                        Order Items (@Model.Items.Count)
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="border-0">Product</th>
+                                    <th class="border-0 text-center">Quantity</th>
+                                    <th class="border-0 text-end">Unit Price</th>
+                                    <th class="border-0 text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                @if (!string.IsNullOrEmpty(item.ProductImageUrl))
+                                                {
+                                                    <img src="@item.ProductImageUrl" 
+                                                         alt="@item.ProductName" 
+                                                         class="rounded me-3 shadow-sm"
+                                                         style="width: 60px; height: 60px; object-fit: cover;">
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center"
+                                                         style="width: 60px; height: 60px;">
+                                                        <i class="fas fa-image text-muted"></i>
+                                                    </div>
+                                                }
+                                                <div>
+                                                    <h6 class="mb-0">@item.ProductName</h6>
+                                                    <small class="text-muted">ID: #@item.ProductId</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center align-middle">
+                                            <span class="badge bg-light text-dark px-3 py-2">
+                                                × @item.Quantity
+                                            </span>
+                                        </td>
+                                        <td class="text-end align-middle fw-semibold">
+                                            $@item.UnitPrice.ToString("F2")
+                                        </td>
+                                        <td class="text-end align-middle">
+                                            <strong class="text-primary">
+                                                $@((item.UnitPrice * item.Quantity).ToString("F2"))
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Timeline -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-history me-2 text-primary"></i>
+                        Order Timeline
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item completed">
+                            <div class="timeline-marker bg-success">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">Order Placed</h6>
+                                <p class="text-muted small mb-0">@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</p>
+                            </div>
+                        </div>
+                        @if (Model.Status.ToLower() != "pending" && Model.Status.ToLower() != "cancelled")
+                        {
+                            <div class="timeline-item completed">
+                                <div class="timeline-marker bg-info">
+                                    <i class="fas fa-spinner text-white"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Processing</h6>
+                                    <p class="text-muted small mb-0">Order is being prepared</p>
+                                </div>
+                            </div>
+                        }
+                        @if (Model.Status.ToLower() == "shipped" || Model.Status.ToLower() == "delivered")
+                        {
+                            <div class="timeline-item completed">
+                                <div class="timeline-marker bg-primary">
+                                    <i class="fas fa-truck text-white"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Shipped</h6>
+                                    <p class="text-muted small mb-0">Out for delivery</p>
+                                </div>
+                            </div>
+                        }
+                        @if (Model.Status.ToLower() == "delivered")
+                        {
+                            <div class="timeline-item completed">
+                                <div class="timeline-marker bg-success">
+                                    <i class="fas fa-check-circle text-white"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Delivered</h6>
+                                    <p class="text-muted small mb-0">Successfully delivered</p>
+                                </div>
+                            </div>
+                        }
+                        @if (Model.Status.ToLower() == "cancelled")
+                        {
+                            <div class="timeline-item completed">
+                                <div class="timeline-marker bg-danger">
+                                    <i class="fas fa-times-circle text-white"></i>
+                                </div>
+                                <div class="timeline-content">
+                                    <h6 class="mb-1">Cancelled</h6>
+                                    <p class="text-muted small mb-0">Order has been cancelled</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary Sidebar -->
+        <div class="col-lg-4">
+            <!-- Order Summary Card -->
+            <div class="card border-0 shadow-sm mb-4 sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>
+                        Order Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                        <span class="text-muted">Subtotal</span>
+                        <strong>$@Model.TotalAmount.ToString("F2")</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                        <span class="text-muted">Shipping</span>
+                        <strong class="text-success">FREE</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3 pb-3 border-bottom">
+                        <span class="text-muted">Tax</span>
+                        <strong>$0.00</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-0">
+                        <h5 class="mb-0 fw-bold">Total</h5>
+                        <h5 class="mb-0 fw-bold text-primary">
+                            $@Model.TotalAmount.ToString("F2")
+                        </h5>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-top-0">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Index" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Back to Orders
+                        </a>
+                        @if (Model.Status.ToLower() == "pending")
+                        {
+                            <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                                <i class="fas fa-times me-2"></i>
+                                Cancel Order
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Info Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">
+                        <i class="fas fa-info-circle me-2 text-info"></i>
+                        Order Information
+                    </h6>
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Order ID</small>
+                        <strong>#@Model.Id</strong>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Order Date</small>
+                        <strong>@Model.CreatedAt.ToString("MMM dd, yyyy")</strong>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Status</small>
+                        <span class="badge @statusClass">@Model.Status</span>
+                    </div>
+                    <div class="mb-0">
+                        <small class="text-muted d-block mb-1">Total Items</small>
+                        <strong>@Model.Items.Sum(i => i.Quantity) items</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Order Modal -->
+@if (Model.Status.ToLower() == "pending")
+{
+    <div class="modal fade" id="cancelOrderModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Cancel Order
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">Are you sure you want to cancel this order? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>
+                        No, Keep Order
+                    </button>
+                    <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-check me-2"></i>
+                            Yes, Cancel Order
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Custom Styles -->
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-bottom: 30px;
+    }
+
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: -23px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .timeline-item:not(.completed) .timeline-marker {
+        background: #e9ecef !important;
+    }
+
+    .timeline-item:not(.completed) .timeline-marker i {
+        color: #6c757d !important;
+    }
+
+    .timeline-content h6 {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .sticky-top {
+        position: sticky;
+        z-index: 100;
+    }
+
+    @@media (max-width: 991px) {
+        .sticky-top {
+            position: relative;
+        }
+    }
+</style>

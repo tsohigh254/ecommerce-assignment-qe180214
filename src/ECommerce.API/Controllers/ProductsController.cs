@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ECommerce.API.Data;
 using ECommerce.Core.Models;
+using ECommerce.API.Services;
 
 namespace ECommerce.API.Controllers
 {
@@ -11,21 +13,83 @@ namespace ECommerce.API.Controllers
     {
         private readonly ECommerceDbContext _context;
         private readonly ILogger<ProductsController> _logger;
+        private readonly IImageService _imageService;
 
-        public ProductsController(ECommerceDbContext context, ILogger<ProductsController> logger)
+        public ProductsController(
+            ECommerceDbContext context, 
+            ILogger<ProductsController> logger,
+            IImageService imageService)
         {
             _context = context;
             _logger = logger;
+            _imageService = imageService;
         }
 
         // GET: api/products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<ProductPagedResult>> GetProducts(
+            [FromQuery] string? searchTerm,
+            [FromQuery] decimal? minPrice,
+            [FromQuery] decimal? maxPrice,
+            [FromQuery] string? sortBy,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10)
         {
             try
             {
-                var products = await _context.Products.ToListAsync();
-                return Ok(products);
+                // Start with all products
+                var query = _context.Products.AsQueryable();
+
+                // Apply search filter
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    query = query.Where(p => 
+                        p.Name.ToLower().Contains(searchTerm.ToLower()) || 
+                        p.Description.ToLower().Contains(searchTerm.ToLower()));
+                }
+
+                // Apply price filters
+                if (minPrice.HasValue)
+                {
+                    query = query.Where(p => p.Price >= minPrice.Value);
+                }
+
+                if (maxPrice.HasValue)
+                {
+                    query = query.Where(p => p.Price <= maxPrice.Value);
+                }
+
+                // Apply sorting
+                query = sortBy?.ToLower() switch
+                {
+                    "price_asc" => query.OrderBy(p => p.Price),
+                    "price_desc" => query.OrderByDescending(p => p.Price),
+                    "name_asc" => query.OrderBy(p => p.Name),
+                    "name_desc" => query.OrderByDescending(p => p.Name),
+                    "date_desc" => query.OrderByDescending(p => p.CreatedAt),
+                    "date_asc" => query.OrderBy(p => p.CreatedAt),
+                    _ => query.OrderByDescending(p => p.CreatedAt) // Default: newest first
+                };
+
+                // Get total count before pagination
+                var totalCount = await query.CountAsync();
+
+                // Apply pagination
+                var products = await query
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                var result = new ProductPagedResult
+                {
+                    Products = products,
+                    TotalCount = totalCount,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+                };
+
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -58,7 +122,8 @@ namespace ECommerce.API.Controllers
 
         // POST: api/products
         [HttpPost]
-        public async Task<ActionResult<Product>> CreateProduct(Product product)
+        [Authorize] // Only authenticated users can create products
+        public async Task<ActionResult<Product>> CreateProduct([FromForm] ProductCreateDto dto)
         {
             try
             {
@@ -67,8 +132,25 @@ namespace ECommerce.API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                product.CreatedAt = DateTime.UtcNow;
-                product.UpdatedAt = DateTime.UtcNow;
+                var product = new Product
+                {
+                    Name = dto.Name,
+                    Description = dto.Description,
+                    Price = dto.Price,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                // Handle image upload if provided
+                if (dto.ImageFile != null)
+                {
+                    product.ImageUrl = await _imageService.UploadImageAsync(dto.ImageFile);
+                }
+                else if (!string.IsNullOrEmpty(dto.ImageUrl))
+                {
+                    // Allow manual URL input as fallback
+                    product.ImageUrl = dto.ImageUrl;
+                }
 
                 _context.Products.Add(product);
                 await _context.SaveChangesAsync();
@@ -78,17 +160,18 @@ namespace ECommerce.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while creating product");
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
             }
         }
 
         // PUT: api/products/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProduct(int id, Product product)
+        [Authorize] // Only authenticated users can update products
+        public async Task<IActionResult> UpdateProduct(int id, [FromForm] ProductUpdateDto dto)
         {
             try
             {
-                if (id != product.Id)
+                if (id != dto.Id)
                 {
                     return BadRequest("Product ID mismatch");
                 }
@@ -105,10 +188,22 @@ namespace ECommerce.API.Controllers
                 }
 
                 // Update properties
-                existingProduct.Name = product.Name;
-                existingProduct.Description = product.Description;
-                existingProduct.Price = product.Price;
-                existingProduct.ImageUrl = product.ImageUrl;
+                existingProduct.Name = dto.Name;
+                existingProduct.Description = dto.Description;
+                existingProduct.Price = dto.Price;
+
+                // Handle image upload if provided
+                if (dto.ImageFile != null)
+                {
+                    existingProduct.ImageUrl = await _imageService.UploadImageAsync(dto.ImageFile);
+                }
+                else if (!string.IsNullOrEmpty(dto.ImageUrl))
+                {
+                    // Update URL if provided
+                    existingProduct.ImageUrl = dto.ImageUrl;
+                }
+                // If neither provided, keep existing image
+
                 existingProduct.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
@@ -118,12 +213,13 @@ namespace ECommerce.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while updating product {Id}", id);
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
             }
         }
 
         // DELETE: api/products/5
         [HttpDelete("{id}")]
+        [Authorize] // Only authenticated users can delete products
         public async Task<IActionResult> DeleteProduct(int id)
         {
             try
@@ -145,5 +241,44 @@ namespace ECommerce.API.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+    }
+
+    /// <summary>
+    /// DTO for creating a product with image upload
+    /// </summary>
+    public class ProductCreateDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public string? ImageUrl { get; set; } // Optional URL fallback
+        public IFormFile? ImageFile { get; set; } // Image file upload
+    }
+
+    /// <summary>
+    /// DTO for updating a product with image upload
+    /// </summary>
+    public class ProductUpdateDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public string? ImageUrl { get; set; } // Optional URL fallback
+        public IFormFile? ImageFile { get; set; } // Image file upload
+    }
+
+    /// <summary>
+    /// Paged result for products with pagination metadata
+    /// </summary>
+    public class ProductPagedResult
+    {
+        public List<Product> Products { get; set; } = new();
+        public int TotalCount { get; set; }
+        public int PageNumber { get; set; }
+        public int PageSize { get; set; }
+        public int TotalPages { get; set; }
+        public bool HasPreviousPage => PageNumber > 1;
+        public bool HasNextPage => PageNumber < TotalPages;
     }
 }

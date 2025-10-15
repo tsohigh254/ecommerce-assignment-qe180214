@@ -1,5 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using ECommerce.API.Data;
+using ECommerce.API.Configuration;
+using ECommerce.Core.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +33,62 @@ if (string.IsNullOrEmpty(connectionString))
 
 builder.Services.AddDbContext<ECommerceDbContext>(options =>
     options.UseNpgsql(connectionString));
+
+// Configure JWT Settings
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+builder.Services.Configure<JwtSettings>(jwtSettings);
+var jwtConfig = jwtSettings.Get<JwtSettings>();
+
+// Configure Cloudinary Settings
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
+
+// Configure Stripe Settings
+builder.Services.Configure<StripeSettings>(
+    builder.Configuration.GetSection("StripeSettings"));
+
+// Register Image Upload Service
+builder.Services.AddScoped<ECommerce.API.Services.IImageService, ECommerce.API.Services.ImageService>();
+
+// Register Payment Service
+builder.Services.AddScoped<ECommerce.API.Services.IPaymentService, ECommerce.API.Services.StripePaymentService>();
+
+// Add Identity
+builder.Services.AddIdentity<User, IdentityRole>(options =>
+{
+    // Password settings
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+
+    // User settings
+    options.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<ECommerceDbContext>()
+.AddDefaultTokenProviders();
+
+// Configure JWT Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtConfig?.Issuer,
+        ValidAudience = jwtConfig?.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtConfig?.SecretKey ?? "DefaultSecretKey"))
+    };
+});
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -62,7 +124,14 @@ if (app.Environment.IsDevelopment())
 // Enable CORS
 app.UseCors("AllowAll");
 
-app.UseHttpsRedirection();
+// Only use HTTPS redirection in production
+if (app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
+
+// Add Authentication & Authorization middleware
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
