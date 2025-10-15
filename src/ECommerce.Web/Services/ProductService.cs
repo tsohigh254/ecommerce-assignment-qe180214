@@ -27,12 +27,18 @@ namespace ECommerce.Web.Services
             _logger = logger;
             
             // Priority: Environment Variable -> Configuration -> Development Default
-            var baseUrl = Environment.GetEnvironmentVariable("API_BASE_URL") 
-                ?? configuration["ApiSettings:BaseUrl"] 
-                ?? "http://api:8080";
+            var envVar = Environment.GetEnvironmentVariable("API_BASE_URL");
+            var configValue = configuration["ApiSettings:BaseUrl"];
+            
+            _logger.LogInformation("API_BASE_URL env var: {EnvVar}", envVar ?? "null");
+            _logger.LogInformation("ApiSettings:BaseUrl config: {ConfigValue}", configValue ?? "null");
+            
+            var baseUrl = envVar ?? configValue ?? "http://api:8080";
             
             // Ensure base URL ends with /api
             _baseUrl = baseUrl.TrimEnd('/') + "/api";
+            
+            _logger.LogInformation("Final API Base URL: {BaseUrl}", _baseUrl);
         }
 
         private void AddAuthorizationHeader()
