@@ -43,7 +43,7 @@ public class PaymentService : IPaymentService
             var json = JsonSerializer.Serialize(requestData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync("api/payment/create-intent", content);
+            var response = await _httpClient.PostAsync("/api/payment/create-intent", content);
 
             if (response.IsSuccessStatusCode)
             {
@@ -81,7 +81,7 @@ public class PaymentService : IPaymentService
             
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync("api/payment/confirm", content);
+            var response = await _httpClient.PostAsync("/api/payment/confirm", content);
 
             if (response.IsSuccessStatusCode)
             {
@@ -111,7 +111,7 @@ public class PaymentService : IPaymentService
         {
             AddAuthorizationHeader();
 
-            var response = await _httpClient.GetAsync($"api/payment/status/{paymentIntentId}");
+            var response = await _httpClient.GetAsync($"/api/payment/status/{paymentIntentId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -141,7 +141,7 @@ public class PaymentService : IPaymentService
         {
             AddAuthorizationHeader();
 
-            var response = await _httpClient.PostAsync($"api/payment/cancel/{paymentIntentId}", null);
+            var response = await _httpClient.PostAsync($"/api/payment/cancel/{paymentIntentId}", null);
 
             return response.IsSuccessStatusCode;
         }
@@ -156,7 +156,7 @@ public class PaymentService : IPaymentService
     {
         try
         {
-            var response = await _httpClient.GetAsync("api/payment/publishable-key");
+            var response = await _httpClient.GetAsync("/api/payment/publishable-key");
 
             if (response.IsSuccessStatusCode)
             {
