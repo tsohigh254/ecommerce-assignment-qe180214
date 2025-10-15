@@ -40,19 +40,28 @@ namespace ECommerce.Web.Services
             
             var baseUrlString = envVar ?? configValue ?? "http://api:8080";
             
+            // Clean và sanitize URL string
+            baseUrlString = baseUrlString?.Trim() ?? "http://api:8080";
+            
+            // Log chuỗi sau khi clean để debug
+            _logger.LogInformation("Cleaned base URL string: '{BaseUrlString}' (Length: {Length})", 
+                baseUrlString, baseUrlString.Length);
+            
             // *** CẤU HÌNH QUAN TRỌNG: Thiết lập BaseAddress cho HttpClient ***
             // BaseAddress phải là URI hợp lệ (ví dụ: https://example.com)
             try
             {
-                // BaseAddress chỉ nên là root URI, không bao gồm path như /api
-                _httpClient.BaseAddress = new Uri(baseUrlString.TrimEnd('/') + "/");
+                // Đảm bảo URL kết thúc bằng /
+                var finalUrl = baseUrlString.TrimEnd('/') + "/";
+                _httpClient.BaseAddress = new Uri(finalUrl);
                 _logger.LogInformation("HttpClient BaseAddress set to: {BaseAddress}", _httpClient.BaseAddress);
             }
             catch (UriFormatException ex)
             {
-                // Log lỗi và re-throw để ngăn chặn lỗi runtime
-                _logger.LogError(ex, "FATAL: Invalid URI format for API Base URL: {Url}", baseUrlString);
-                // Ném ngoại lệ để dừng ứng dụng nếu không có Base URL hợp lệ
+                // Log chi tiết để debug
+                _logger.LogError(ex, "FATAL: Invalid URI format for API Base URL: '{Url}' | Raw bytes: {Bytes}", 
+                    baseUrlString, 
+                    string.Join(" ", System.Text.Encoding.UTF8.GetBytes(baseUrlString).Select(b => b.ToString("X2"))));
                 throw; 
             }
         }
