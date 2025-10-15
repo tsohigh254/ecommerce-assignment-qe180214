@@ -13,9 +13,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // Add Entity Framework
-// Priority: Environment Variable -> Configuration -> Development Default
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING") 
-    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+// Priority: ConnectionStrings__DefaultConnection (Render format) -> DATABASE_CONNECTION_STRING -> appsettings.json
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? Environment.GetEnvironmentVariable("DATABASE_CONNECTION_STRING");
 
 // Fallback for development only - use a clearly marked placeholder and require developers to set .env or environment variable
 if (string.IsNullOrEmpty(connectionString) && builder.Environment.IsDevelopment())
@@ -28,8 +28,10 @@ if (string.IsNullOrEmpty(connectionString) && builder.Environment.IsDevelopment(
 
 if (string.IsNullOrEmpty(connectionString))
 {
-    throw new InvalidOperationException("Database connection string not configured. Please set DATABASE_CONNECTION_STRING environment variable or DefaultConnection in configuration.");
+    throw new InvalidOperationException("Database connection string not configured. Please set ConnectionStrings__DefaultConnection or DATABASE_CONNECTION_STRING environment variable.");
 }
+
+Console.WriteLine($"Using connection string: {new string('*', Math.Min(connectionString.Length, 20))}... (masked for security)");
 
 builder.Services.AddDbContext<ECommerceDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -93,11 +95,38 @@ builder.Services.AddAuthentication(options =>
 // Add CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowAll", corsBuilder =>
     {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
+        if (builder.Environment.IsProduction())
+        {
+            // Production: Use specific allowed origins from configuration
+            var allowedOrigins = builder.Configuration
+                .GetSection("AllowedOrigins")
+                .Get<string[]>();
+            
+            if (allowedOrigins != null && allowedOrigins.Length > 0)
+            {
+                corsBuilder.WithOrigins(allowedOrigins)
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+            }
+            else
+            {
+                // Fallback: Allow any origin if not configured (not recommended)
+                Console.WriteLine("WARNING: AllowedOrigins not configured for production!");
+                corsBuilder.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+            }
+        }
+        else
+        {
+            // Development: Allow any origin for easier testing
+            corsBuilder.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+        }
     });
 });
 
@@ -136,18 +165,45 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Ensure database is created
+// Run database migrations and seed data
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<ECommerceDbContext>();
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    
     try
     {
-        context.Database.EnsureCreated();
+        var context = services.GetRequiredService<ECommerceDbContext>();
+        
+        logger.LogInformation("Starting database migration...");
+        
+        // Apply any pending migrations
+        context.Database.Migrate();
+        
+        logger.LogInformation("Database migration completed successfully");
+        
+        // Check if we have any products
+        var productCount = await context.Products.CountAsync();
+        logger.LogInformation($"Database contains {productCount} products");
+        
+        if (productCount == 0)
+        {
+            logger.LogWarning("No products found in database. Seed data may not have been applied.");
+        }
     }
     catch (Exception ex)
     {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred creating the database.");
+        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+        // Log connection string (masked) for debugging
+        var connStr = builder.Configuration.GetConnectionString("DefaultConnection");
+        if (!string.IsNullOrEmpty(connStr))
+        {
+            var maskedConnStr = connStr.Length > 30 
+                ? connStr.Substring(0, 20) + "..." + connStr.Substring(connStr.Length - 10)
+                : new string('*', connStr.Length);
+            logger.LogError($"Connection string format: {maskedConnStr}");
+        }
+        throw; // Re-throw to prevent startup with broken database
     }
 }
 
