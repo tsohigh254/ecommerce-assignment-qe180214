@@ -1,0 +1,13 @@
+# Ignore files for faster builds
+.git
+.github
+*.md
+!README.md
+.vscode
+.vs
+bin/
+obj/
+*.user
+*.suo
+TestResults/
+.DS_Store
