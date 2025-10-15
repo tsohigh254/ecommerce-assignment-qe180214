@@ -8,7 +8,6 @@ public class OrderService : IOrderService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<OrderService> _logger;
-    private readonly string _apiBaseUrl;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public OrderService(
@@ -19,11 +18,23 @@ public class OrderService : IOrderService
     {
         _httpClient = httpClientFactory.CreateClient();
         _logger = logger;
-        // Priority: Environment Variable -> Configuration -> Development Default
-        _apiBaseUrl = Environment.GetEnvironmentVariable("API_BASE_URL")
-            ?? configuration["ApiSettings:BaseUrl"] 
-            ?? "http://api:8080";
         _httpContextAccessor = httpContextAccessor;
+        
+        // Priority: Environment Variable -> Configuration -> Development Default
+        var baseUrlString = (Environment.GetEnvironmentVariable("API_BASE_URL")
+            ?? configuration["ApiSettings:BaseUrl"] 
+            ?? "http://api:8080").Trim();
+            
+        try
+        {
+            _httpClient.BaseAddress = new Uri(baseUrlString.TrimEnd('/') + "/");
+            _logger.LogInformation("OrderService - HttpClient BaseAddress set to: {BaseAddress}", _httpClient.BaseAddress);
+        }
+        catch (UriFormatException ex)
+        {
+            _logger.LogError(ex, "FATAL: Invalid URI format for API Base URL: '{Url}'", baseUrlString);
+            throw;
+        }
     }
 
     private void AddAuthHeader()
@@ -51,7 +62,7 @@ public class OrderService : IOrderService
                 requestContent = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
             }
             
-            var response = await _httpClient.PostAsync($"{_apiBaseUrl}/api/orders", requestContent);
+            var response = await _httpClient.PostAsync("/api/orders", requestContent);
 
             if (response.IsSuccessStatusCode)
             {
@@ -86,7 +97,7 @@ public class OrderService : IOrderService
         try
         {
             AddAuthHeader();
-            var response = await _httpClient.GetAsync($"{_apiBaseUrl}/api/orders");
+            var response = await _httpClient.GetAsync("/api/orders");
 
             if (response.IsSuccessStatusCode)
             {
@@ -120,7 +131,7 @@ public class OrderService : IOrderService
         try
         {
             AddAuthHeader();
-            var response = await _httpClient.GetAsync($"{_apiBaseUrl}/api/orders/{orderId}");
+            var response = await _httpClient.GetAsync("/api/orders/{orderId}");
 
             if (response.IsSuccessStatusCode)
             {

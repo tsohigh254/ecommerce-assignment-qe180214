@@ -9,17 +9,27 @@ public class AccountController : Controller
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<AccountController> _logger;
-    private readonly string _apiBaseUrl;
 
     public AccountController(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<AccountController> logger)
     {
         _httpClient = httpClientFactory.CreateClient();
         _logger = logger;
+        
         // Priority: Environment Variable -> Configuration -> Development Default
-        _apiBaseUrl = Environment.GetEnvironmentVariable("API_BASE_URL")
+        var baseUrlString = (Environment.GetEnvironmentVariable("API_BASE_URL")
             ?? configuration["ApiSettings:BaseUrl"] 
-            ?? "http://api:8080";
-        _logger.LogInformation($"API Base URL configured as: {_apiBaseUrl}");
+            ?? "http://api:8080").Trim();
+            
+        try
+        {
+            _httpClient.BaseAddress = new Uri(baseUrlString.TrimEnd('/') + "/");
+            _logger.LogInformation("AccountController - HttpClient BaseAddress set to: {BaseAddress}", _httpClient.BaseAddress);
+        }
+        catch (UriFormatException ex)
+        {
+            _logger.LogError(ex, "FATAL: Invalid URI format for API Base URL: '{Url}'", baseUrlString);
+            throw;
+        }
     }
 
     // GET: /Account/Register
@@ -58,7 +68,7 @@ public class AccountController : Controller
             var json = JsonSerializer.Serialize(registerDto);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync($"{_apiBaseUrl}/api/auth/register", content);
+            var response = await _httpClient.PostAsync("/api/auth/register", content);
 
             if (response.IsSuccessStatusCode)
             {
@@ -145,7 +155,7 @@ public class AccountController : Controller
             var json = JsonSerializer.Serialize(loginDto);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync($"{_apiBaseUrl}/api/auth/login", content);
+            var response = await _httpClient.PostAsync("/api/auth/login", content);
 
             if (response.IsSuccessStatusCode)
             {

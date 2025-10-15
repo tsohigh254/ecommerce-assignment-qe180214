@@ -9,7 +9,6 @@ public class CartService : ICartService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<CartService> _logger;
-    private readonly string _apiBaseUrl;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public CartService(
@@ -20,11 +19,23 @@ public class CartService : ICartService
     {
         _httpClient = httpClientFactory.CreateClient();
         _logger = logger;
-        // Priority: Environment Variable -> Configuration -> Development Default
-        _apiBaseUrl = Environment.GetEnvironmentVariable("API_BASE_URL")
-            ?? configuration["ApiSettings:BaseUrl"] 
-            ?? "http://api:8080";
         _httpContextAccessor = httpContextAccessor;
+        
+        // Priority: Environment Variable -> Configuration -> Development Default
+        var baseUrlString = (Environment.GetEnvironmentVariable("API_BASE_URL")
+            ?? configuration["ApiSettings:BaseUrl"] 
+            ?? "http://api:8080").Trim();
+            
+        try
+        {
+            _httpClient.BaseAddress = new Uri(baseUrlString.TrimEnd('/') + "/");
+            _logger.LogInformation("CartService - HttpClient BaseAddress set to: {BaseAddress}", _httpClient.BaseAddress);
+        }
+        catch (UriFormatException ex)
+        {
+            _logger.LogError(ex, "FATAL: Invalid URI format for API Base URL: '{Url}'", baseUrlString);
+            throw;
+        }
     }
 
     private void AddAuthHeader()
@@ -42,7 +53,7 @@ public class CartService : ICartService
         try
         {
             AddAuthHeader();
-            var response = await _httpClient.GetAsync($"{_apiBaseUrl}/api/cart");
+            var response = await _httpClient.GetAsync("/api/cart");
 
             if (response.IsSuccessStatusCode)
             {
@@ -99,7 +110,7 @@ public class CartService : ICartService
             var json = JsonSerializer.Serialize(addToCartDto);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync($"{_apiBaseUrl}/api/cart/add", content);
+            var response = await _httpClient.PostAsync("/api/cart/add", content);
 
             if (response.IsSuccessStatusCode)
             {
@@ -130,7 +141,7 @@ public class CartService : ICartService
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PutAsync(
-                $"{_apiBaseUrl}/api/cart/item/{cartItemId}", 
+                "/api/cart/item/{cartItemId}", 
                 content);
 
             if (response.IsSuccessStatusCode)
@@ -158,7 +169,7 @@ public class CartService : ICartService
         {
             AddAuthHeader();
             var response = await _httpClient.DeleteAsync(
-                $"{_apiBaseUrl}/api/cart/item/{cartItemId}");
+                "/api/cart/item/{cartItemId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -184,7 +195,7 @@ public class CartService : ICartService
         try
         {
             AddAuthHeader();
-            var response = await _httpClient.DeleteAsync($"{_apiBaseUrl}/api/cart/clear");
+            var response = await _httpClient.DeleteAsync("/api/cart/clear");
 
             if (response.IsSuccessStatusCode)
             {
