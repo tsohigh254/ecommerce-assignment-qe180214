@@ -20,7 +20,10 @@ public class CartService : ICartService
     {
         _httpClient = httpClientFactory.CreateClient();
         _logger = logger;
-        _apiBaseUrl = configuration["ApiSettings:BaseUrl"] ?? "http://api:8080";
+        // Priority: Environment Variable -> Configuration -> Development Default
+        _apiBaseUrl = Environment.GetEnvironmentVariable("API_BASE_URL")
+            ?? configuration["ApiSettings:BaseUrl"] 
+            ?? "http://api:8080";
         _httpContextAccessor = httpContextAccessor;
     }
 

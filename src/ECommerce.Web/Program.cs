@@ -24,7 +24,10 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddHttpClient<IPaymentService, PaymentService>(client =>
 {
-    var apiUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "http://api:8080";
+    // Priority: Environment Variable -> Configuration -> Development Default
+    var apiUrl = Environment.GetEnvironmentVariable("API_BASE_URL")
+        ?? builder.Configuration["ApiSettings:BaseUrl"] 
+        ?? "http://api:8080";
     client.BaseAddress = new Uri(apiUrl);
 });
 
