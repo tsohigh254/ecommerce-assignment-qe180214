@@ -34,6 +34,21 @@ Use these test card numbers:
 
 Any future expiry date and any 3-digit CVV will work.
 
-## 📚 Full Documentation
+## 📚 Documentation
 
-See [SETUP_AND_TESTING_GUIDE.md](./SETUP_AND_TESTING_GUIDE.md) for complete instructions.
+- **[SETUP_AND_TESTING_GUIDE.md](./SETUP_AND_TESTING_GUIDE.md)** - Complete local setup instructions
+- **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Deploy to production (Render + Stripe webhook)
+
+## 🚀 Deploy to Production
+
+Ready to deploy? Follow our step-by-step guide:
+
+👉 **[Deployment Guide](./DEPLOYMENT_GUIDE.md)**
+
+Quick deploy to Render:
+1. Create Render account
+2. Deploy PostgreSQL database
+3. Deploy API service
+4. Deploy Web service
+5. Setup Stripe webhook in production
+6. Test your live app!
