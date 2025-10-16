@@ -39,6 +39,21 @@ services:
       timeout: 5s
       retries: 5
 
+  # Redis for Data Protection Key Storage
+  redis:
+    image: redis:7-alpine
+    container_name: ecommerce-redis-dev
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   # E-Commerce API (Internal only - không expose port ra ngoài)
   api:
     build:
@@ -51,8 +66,11 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENV:-Development}
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=${DB_NAME:-ecommerce};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-postgres}
+      - ConnectionStrings__Redis=redis:6379
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
 
@@ -67,9 +85,12 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENV:-Development}
       - ApiSettings__BaseUrl=http://api:8080
+      - ConnectionStrings__Redis=redis:6379
     depends_on:
       - api
+      - redis
     restart: unless-stopped
 
 volumes:
   postgres_data:
+  redis_data:
