@@ -45,45 +45,54 @@
                     <div class="card-body">
                         @foreach (var item in Model.Items)
                         {
-                            <div class="row mb-4 pb-4 border-bottom cart-item" data-item-id="@item.CartItemId">
+                            <div class="row mb-4 pb-4 border-bottom cart-item align-items-center" data-item-id="@item.CartItemId">
                                 <div class="col-md-2">
                                     @if (!string.IsNullOrEmpty(item.ProductImageUrl))
                                     {
-                                        <img src="@item.ProductImageUrl" class="img-fluid rounded" alt="@item.ProductName" style="max-height: 100px; object-fit: cover;">
+                                        <img src="@item.ProductImageUrl" class="img-fluid rounded shadow-sm" alt="@item.ProductName" style="max-height: 100px; object-fit: cover;">
                                     }
                                     else
                                     {
-                                        <div class="bg-secondary rounded d-flex align-items-center justify-content-center" style="height: 100px;">
+                                        <div class="bg-secondary rounded d-flex align-items-center justify-content-center shadow-sm" style="height: 100px;">
                                             <i class="bi bi-image text-white" style="font-size: 2rem;"></i>
                                         </div>
                                     }
                                 </div>
                                 <div class="col-md-4">
-                                    <h5>@item.ProductName</h5>
-                                    <p class="text-muted mb-0">Price: $@item.ProductPrice.ToString("F2")</p>
+                                    <h5 class="mb-1">@item.ProductName</h5>
+                                    <p class="text-muted mb-0">
+                                        <i class="bi bi-tag-fill"></i> $@item.ProductPrice.ToString("F2")
+                                    </p>
                                 </div>
                                 <div class="col-md-3">
-                                    <div class="input-group">
-                                        <button class="btn btn-outline-secondary btn-sm quantity-minus" type="button">
-                                            <i class="bi bi-dash"></i>
+                                    <label class="form-label small text-muted mb-1">Quantity</label>
+                                    <div class="input-group input-group-sm">
+                                        <button class="btn btn-outline-danger quantity-minus" type="button" title="Decrease quantity">
+                                            <i class="bi bi-dash-lg"></i>
                                         </button>
-                                        <input type="number" class="form-control form-control-sm text-center quantity-input" 
+                                        <input type="number" class="form-control text-center fw-bold quantity-input" 
                                                value="@item.Quantity" min="1" max="99" 
                                                data-item-id="@item.CartItemId"
-                                               data-price="@item.ProductPrice">
-                                        <button class="btn btn-outline-secondary btn-sm quantity-plus" type="button">
-                                            <i class="bi bi-plus"></i>
+                                               data-price="@item.ProductPrice"
+                                               style="max-width: 60px;">
+                                        <button class="btn btn-outline-success quantity-plus" type="button" title="Increase quantity">
+                                            <i class="bi bi-plus-lg"></i>
                                         </button>
                                     </div>
                                 </div>
-                                <div class="col-md-2">
-                                    <p class="mb-0"><strong class="item-subtotal">$@item.Subtotal.ToString("F2")</strong></p>
+                                <div class="col-md-2 text-end">
+                                    <label class="form-label small text-muted mb-1">Subtotal</label>
+                                    <p class="mb-0">
+                                        <strong class="item-subtotal text-primary fs-5">$@item.Subtotal.ToString("F2")</strong>
+                                    </p>
                                 </div>
-                                <div class="col-md-1">
+                                <div class="col-md-1 text-end">
                                     <form method="post" asp-action="Remove" asp-controller="Cart" class="d-inline">
                                         <input type="hidden" name="cartItemId" value="@item.CartItemId" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this item from cart?')">
-                                            <i class="bi bi-trash"></i>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                onclick="return confirm('Remove this item from cart?')"
+                                                title="Remove item">
+                                            <i class="bi bi-x-lg"></i>
                                         </button>
                                     </form>
                                 </div>
@@ -134,6 +143,62 @@
 </div>
 
 @section Scripts {
+    <style>
+        /* Improve button styling */
+        .quantity-minus, .quantity-plus {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .quantity-minus:hover {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+            transform: scale(1.1);
+        }
+
+        .quantity-plus:hover {
+            background-color: #198754;
+            color: white;
+            border-color: #198754;
+            transform: scale(1.1);
+        }
+
+        .quantity-input {
+            font-size: 1rem;
+            border-left: 0;
+            border-right: 0;
+        }
+
+        .quantity-input:focus {
+            box-shadow: none;
+            border-color: #dee2e6;
+        }
+
+        .cart-item {
+            transition: background-color 0.2s ease;
+        }
+
+        .cart-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .btn-outline-danger i.bi-x-lg {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .btn-outline-danger:hover i.bi-x-lg {
+            transform: rotate(90deg);
+            transition: transform 0.3s ease;
+        }
+    </style>
+
     <script>
         $(document).ready(function() {
             // Handle quantity changes
@@ -196,6 +261,12 @@
                             $('#total-items').text(totalItems);
                             $('#subtotal').text('$' + total.toFixed(2));
                             $('#total').text('$' + total.toFixed(2));
+
+                            // Show success animation
+                            input.closest('.cart-item').addClass('border-success');
+                            setTimeout(function() {
+                                input.closest('.cart-item').removeClass('border-success');
+                            }, 500);
                         } else {
                             alert('Failed to update quantity: ' + response.message);
                         }
