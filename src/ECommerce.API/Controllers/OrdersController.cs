@@ -365,6 +365,7 @@ public class OrderItemDto
 
 public class UpdateOrderStatusRequest
 {
+    [System.ComponentModel.DataAnnotations.Required]
     public string Status { get; set; } = string.Empty;
 }
 
@@ -375,6 +376,8 @@ public class PlaceOrderRequest
 
 public class UpdatePaymentStatusRequest
 {
+    [System.ComponentModel.DataAnnotations.Required]
     public string PaymentIntentId { get; set; } = string.Empty;
+    [System.ComponentModel.DataAnnotations.Required]
     public string PaymentStatus { get; set; } = string.Empty;
 }

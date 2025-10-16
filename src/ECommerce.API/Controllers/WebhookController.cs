@@ -77,9 +77,9 @@ public class WebhookController : ControllerBase
                 if (paymentIntent != null)
                 {
                     await UpdateOrderPaymentStatus(
-                        paymentIntent.Id, 
-                        "Paid",  // Changed from "Succeeded" to "Paid"
-                        "Processing");
+                        paymentIntent.Id,
+                        "Paid", // payment status
+                        "Paid"); // order status
                 }
             }
             // Handle payment intent payment failed
@@ -134,6 +134,16 @@ public class WebhookController : ControllerBase
                 _logger.LogWarning(
                     "Order not found for PaymentIntent: {PaymentIntentId}", 
                     paymentIntentId);
+                return;
+            }
+
+            // Idempotency guard: skip if already at desired statuses
+            if (string.Equals(order.PaymentStatus, paymentStatus, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(order.Status, orderStatus, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation(
+                    "Order {OrderId} already at desired status. PaymentStatus: {PaymentStatus}, Status: {Status}",
+                    order.OrderId, order.PaymentStatus, order.Status);
                 return;
             }
 

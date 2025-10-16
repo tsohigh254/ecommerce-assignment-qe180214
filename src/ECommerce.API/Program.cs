@@ -77,18 +77,28 @@ Console.WriteLine($"Using connection string: {new string('*', Math.Min(connectio
 builder.Services.AddDbContext<ECommerceDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Configure JWT Settings
+// Configure JWT Settings with validation
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-builder.Services.Configure<JwtSettings>(jwtSettings);
+builder.Services
+    .AddOptions<JwtSettings>()
+    .Bind(jwtSettings)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 var jwtConfig = jwtSettings.Get<JwtSettings>();
 
-// Configure Cloudinary Settings
-builder.Services.Configure<CloudinarySettings>(
-    builder.Configuration.GetSection("CloudinarySettings"));
+// Configure Cloudinary Settings with validation
+builder.Services
+    .AddOptions<CloudinarySettings>()
+    .Bind(builder.Configuration.GetSection("CloudinarySettings"))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
-// Configure Stripe Settings
-builder.Services.Configure<StripeSettings>(
-    builder.Configuration.GetSection("StripeSettings"));
+// Configure Stripe Settings with validation
+builder.Services
+    .AddOptions<StripeSettings>()
+    .Bind(builder.Configuration.GetSection("StripeSettings"))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 // Register Image Upload Service
 builder.Services.AddScoped<ECommerce.API.Services.IImageService, ECommerce.API.Services.ImageService>();

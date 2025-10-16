@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace ECommerce.API.Configuration;
 
 /// <summary>
@@ -8,16 +10,19 @@ public class StripeSettings
     /// <summary>
     /// Stripe Secret Key (used on the server-side)
     /// </summary>
+    [Required]
     public string SecretKey { get; set; } = string.Empty;
 
     /// <summary>
     /// Stripe Publishable Key (used on the client-side)
     /// </summary>
+    [Required]
     public string PublishableKey { get; set; } = string.Empty;
 
     /// <summary>
     /// Currency code (e.g., "usd", "vnd")
     /// </summary>
+    [Required]
     public string Currency { get; set; } = "usd";
 
     /// <summary>

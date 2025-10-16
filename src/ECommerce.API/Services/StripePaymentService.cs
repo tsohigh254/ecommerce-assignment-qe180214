@@ -29,10 +29,24 @@ public class StripePaymentService : IPaymentService
     {
         try
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (request.Amount <= 0)
+            {
+                throw new ArgumentException("Amount must be greater than zero", nameof(request.Amount));
+            }
+
+            var currency = string.IsNullOrWhiteSpace(request.Currency)
+                ? _stripeSettings.Currency
+                : request.Currency;
+
             var options = new PaymentIntentCreateOptions
             {
                 Amount = (long)(request.Amount * 100), // Convert to cents
-                Currency = request.Currency.ToLower(),
+                Currency = currency.ToLower(),
                 Description = request.Description,
                 Metadata = request.Metadata,
                 AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions
@@ -75,6 +89,11 @@ public class StripePaymentService : IPaymentService
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(paymentIntentId))
+            {
+                throw new ArgumentException("PaymentIntentId is required", nameof(paymentIntentId));
+            }
+
             var service = new PaymentIntentService();
             var paymentIntent = await service.GetAsync(paymentIntentId);
 
@@ -102,6 +121,11 @@ public class StripePaymentService : IPaymentService
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(paymentIntentId))
+            {
+                throw new ArgumentException("PaymentIntentId is required", nameof(paymentIntentId));
+            }
+
             var service = new PaymentIntentService();
             var paymentIntent = await service.GetAsync(paymentIntentId);
 
@@ -126,6 +150,11 @@ public class StripePaymentService : IPaymentService
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(paymentIntentId))
+            {
+                throw new ArgumentException("PaymentIntentId is required", nameof(paymentIntentId));
+            }
+
             var service = new PaymentIntentService();
             var paymentIntent = await service.CancelAsync(paymentIntentId);
 

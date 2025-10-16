@@ -66,16 +66,17 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label small text-muted mb-1">Quantity</label>
-                                    <div class="input-group input-group-sm">
-                                        <button class="btn btn-outline-danger quantity-minus" type="button" title="Decrease quantity">
+                                    <div class="btn-group align-items-center cart-qty-group" role="group" aria-label="Quantity controls">
+                                        <button class="btn btn-outline-danger btn-qty rounded-circle quantity-minus" type="button" title="Decrease quantity" aria-label="Decrease quantity">
                                             <i class="bi bi-dash-lg"></i>
                                         </button>
                                         <input type="number" class="form-control text-center fw-bold quantity-input" 
                                                value="@item.Quantity" min="1" max="99" 
                                                data-item-id="@item.CartItemId"
                                                data-price="@item.ProductPrice"
+                                               aria-label="Quantity"
                                                style="max-width: 60px;">
-                                        <button class="btn btn-outline-success quantity-plus" type="button" title="Increase quantity">
+                                        <button class="btn btn-outline-success btn-qty rounded-circle quantity-plus" type="button" title="Increase quantity" aria-label="Increase quantity">
                                             <i class="bi bi-plus-lg"></i>
                                         </button>
                                     </div>
@@ -89,9 +90,9 @@
                                 <div class="col-md-1 text-end">
                                     <form method="post" asp-action="Remove" asp-controller="Cart" class="d-inline">
                                         <input type="hidden" name="cartItemId" value="@item.CartItemId" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                        <button type="submit" class="btn btn-sm btn-outline-danger btn-remove-item" 
                                                 onclick="return confirm('Remove this item from cart?')"
-                                                title="Remove item">
+                                                title="Remove item" aria-label="Remove item">
                                             <i class="bi bi-x-lg"></i>
                                         </button>
                                     </form>
@@ -144,59 +145,7 @@
 
 @section Scripts {
     <style>
-        /* Improve button styling */
-        .quantity-minus, .quantity-plus {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            transition: all 0.2s ease;
-        }
-
-        .quantity-minus:hover {
-            background-color: #dc3545;
-            color: white;
-            border-color: #dc3545;
-            transform: scale(1.1);
-        }
-
-        .quantity-plus:hover {
-            background-color: #198754;
-            color: white;
-            border-color: #198754;
-            transform: scale(1.1);
-        }
-
-        .quantity-input {
-            font-size: 1rem;
-            border-left: 0;
-            border-right: 0;
-        }
-
-        .quantity-input:focus {
-            box-shadow: none;
-            border-color: #dee2e6;
-        }
-
-        .cart-item {
-            transition: background-color 0.2s ease;
-        }
-
-        .cart-item:hover {
-            background-color: #f8f9fa;
-        }
-
-        .btn-outline-danger i.bi-x-lg {
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-
-        .btn-outline-danger:hover i.bi-x-lg {
-            transform: rotate(90deg);
-            transition: transform 0.3s ease;
-        }
+        /* moved to site.css: .cart-qty-group, .btn-qty, .quantity-input, .cart-item hover, remove button icon */
     </style>
 
     <script>
@@ -206,18 +155,22 @@
                 var input = $(this).siblings('.quantity-input');
                 var value = parseInt(input.val());
                 if (value > 1) {
+                    $(this).prop('disabled', true);
                     input.val(value - 1);
                     updateQuantity(input);
                 }
+                $(this).prop('disabled', false);
             });
 
             $('.quantity-plus').click(function() {
                 var input = $(this).siblings('.quantity-input');
                 var value = parseInt(input.val());
                 if (value < 99) {
+                    $(this).prop('disabled', true);
                     input.val(value + 1);
                     updateQuantity(input);
                 }
+                $(this).prop('disabled', false);
             });
 
             $('.quantity-input').change(function() {
@@ -234,6 +187,13 @@
                 var cartItemId = input.data('item-id');
                 var quantity = parseInt(input.val());
                 var price = parseFloat(input.data('price'));
+
+                // disable both buttons during request
+                var group = input.closest('.cart-qty-group');
+                var minusBtn = group.find('.quantity-minus');
+                var plusBtn = group.find('.quantity-plus');
+                minusBtn.prop('disabled', true);
+                plusBtn.prop('disabled', true);
 
                 $.ajax({
                     url: '@Url.Action("UpdateQuantity", "Cart")',
@@ -273,6 +233,10 @@
                     },
                     error: function() {
                         alert('An error occurred while updating quantity');
+                    },
+                    complete: function() {
+                        minusBtn.prop('disabled', false);
+                        plusBtn.prop('disabled', false);
                     }
                 });
             }

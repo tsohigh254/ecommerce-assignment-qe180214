@@ -41,11 +41,12 @@ namespace ECommerce.API.Controllers
                 var query = _context.Products.AsQueryable();
 
                 // Apply search filter
-                if (!string.IsNullOrEmpty(searchTerm))
+                if (!string.IsNullOrWhiteSpace(searchTerm))
                 {
-                    query = query.Where(p => 
-                        p.Name.ToLower().Contains(searchTerm.ToLower()) || 
-                        p.Description.ToLower().Contains(searchTerm.ToLower()));
+                    var normalizedSearch = searchTerm.Trim().ToLower();
+                    query = query.Where(p =>
+                        (p.Name != null && p.Name.ToLower().Contains(normalizedSearch)) ||
+                        (p.Description != null && p.Description.ToLower().Contains(normalizedSearch)));
                 }
 
                 // Apply price filters
@@ -248,9 +249,18 @@ namespace ECommerce.API.Controllers
     /// </summary>
     public class ProductCreateDto
     {
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.StringLength(100)]
         public string Name { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.StringLength(500)]
         public string Description { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
         public decimal Price { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Url]
         public string? ImageUrl { get; set; } // Optional URL fallback
         public IFormFile? ImageFile { get; set; } // Image file upload
     }
@@ -261,9 +271,18 @@ namespace ECommerce.API.Controllers
     public class ProductUpdateDto
     {
         public int Id { get; set; }
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.StringLength(100)]
         public string Name { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.StringLength(500)]
         public string Description { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
         public decimal Price { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Url]
         public string? ImageUrl { get; set; } // Optional URL fallback
         public IFormFile? ImageFile { get; set; } // Image file upload
     }

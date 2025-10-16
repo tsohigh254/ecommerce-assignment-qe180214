@@ -17,6 +17,9 @@ public class ImageService : IImageService
 
     public ImageService(IOptions<CloudinarySettings> config, ILogger<ImageService> logger)
     {
+        if (config == null) throw new ArgumentNullException(nameof(config));
+        if (logger == null) throw new ArgumentNullException(nameof(logger));
+
         _logger = logger;
         
         var account = new Account(

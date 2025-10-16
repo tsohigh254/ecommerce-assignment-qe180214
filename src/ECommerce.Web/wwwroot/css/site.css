@@ -1,6 +1,66 @@
 /* ============================================
    MODERN E-COMMERCE UI STYLES
    ============================================ */
+/* ============================================
+   CART PAGE STYLES
+   ============================================ */
+
+.cart-qty-group {
+  gap: 0.5rem;
+}
+
+.btn-qty {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.quantity-minus:hover {
+  background-color: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
+  transform: scale(1.06);
+}
+
+.quantity-plus:hover {
+  background-color: #198754;
+  color: #fff;
+  border-color: #198754;
+  transform: scale(1.06);
+}
+
+.quantity-input {
+  font-size: 1rem;
+  border-left: 0;
+  border-right: 0;
+}
+
+.quantity-input:focus {
+  box-shadow: none;
+  border-color: #dee2e6;
+}
+
+.cart-item {
+  transition: background-color 0.2s ease;
+}
+
+.cart-item:hover {
+  background-color: #f8f9fa;
+}
+
+.btn-remove-item i.bi-x-lg {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.btn-remove-item:hover i.bi-x-lg {
+  transform: rotate(90deg);
+  transition: transform 0.3s ease;
+}
 
 /* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');

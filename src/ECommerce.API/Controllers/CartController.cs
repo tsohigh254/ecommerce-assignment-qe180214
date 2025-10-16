@@ -79,14 +79,24 @@ public class CartController : ControllerBase
     /// Add a product to cart or update quantity if already exists
     /// </summary>
     [HttpPost("add")]
-    public async Task<ActionResult<CartDto>> AddToCart([FromBody] AddToCartRequest request)
+    public async Task<ActionResult<CartDto>> AddToCart([FromBody] AddToCartRequest? request)
     {
         try
         {
+            if (request == null)
+            {
+                return BadRequest(new { message = "Request body is null" });
+            }
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
                 return Unauthorized(new { message = "User not authenticated" });
+            }
+
+            if (request.Quantity <= 0)
+            {
+                return BadRequest(new { message = "Quantity must be greater than 0" });
             }
 
             // Validate product exists
