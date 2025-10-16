@@ -30,7 +30,7 @@ public class Order
     public string? PaymentIntentId { get; set; }
 
     [StringLength(50)]
-    public string PaymentStatus { get; set; } = "Pending"; // Pending, Processing, Succeeded, Failed, Cancelled
+    public string PaymentStatus { get; set; } = "Pending"; // Pending, Processing, Paid, Succeeded, Failed, Cancelled
 
     // Navigation Properties
     [ForeignKey(nameof(UserId))]

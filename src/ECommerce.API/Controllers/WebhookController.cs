@@ -78,7 +78,7 @@ public class WebhookController : ControllerBase
                 {
                     await UpdateOrderPaymentStatus(
                         paymentIntent.Id, 
-                        "Succeeded", 
+                        "Paid",  // Changed from "Succeeded" to "Paid"
                         "Processing");
                 }
             }

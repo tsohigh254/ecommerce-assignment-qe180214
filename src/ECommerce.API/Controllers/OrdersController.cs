@@ -303,7 +303,7 @@ public class OrdersController : ControllerBase
             }
 
             // Validate payment status
-            var validPaymentStatuses = new[] { "Pending", "Processing", "Succeeded", "Failed", "Cancelled" };
+            var validPaymentStatuses = new[] { "Pending", "Processing", "Paid", "Succeeded", "Failed", "Cancelled" };
             if (!validPaymentStatuses.Contains(request.PaymentStatus))
             {
                 return BadRequest(new { message = "Invalid payment status" });
@@ -314,7 +314,7 @@ public class OrdersController : ControllerBase
             order.UpdatedAt = DateTime.UtcNow;
 
             // Update order status based on payment status
-            if (request.PaymentStatus == "Succeeded")
+            if (request.PaymentStatus == "Succeeded" || request.PaymentStatus == "Paid")
             {
                 order.Status = "Processing"; // Order confirmed, ready for processing
             }

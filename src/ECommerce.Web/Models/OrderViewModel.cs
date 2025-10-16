@@ -25,6 +25,7 @@ public class OrderViewModel
     
     public string PaymentStatusBadgeClass => PaymentStatus switch
     {
+        "Paid" => "badge bg-success",
         "Succeeded" => "badge bg-success",
         "Processing" => "badge bg-info",
         "Pending" => "badge bg-warning",

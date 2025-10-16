@@ -264,8 +264,12 @@
                         <strong>@Model.CreatedAt.ToString("MMM dd, yyyy")</strong>
                     </div>
                     <div class="mb-3">
-                        <small class="text-muted d-block mb-1">Status</small>
+                        <small class="text-muted d-block mb-1">Order Status</small>
                         <span class="badge @statusClass">@Model.Status</span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted d-block mb-1">Payment Status</small>
+                        <span class="@Model.PaymentStatusBadgeClass">@Model.PaymentStatus</span>
                     </div>
                     <div class="mb-0">
                         <small class="text-muted d-block mb-1">Total Items</small>
