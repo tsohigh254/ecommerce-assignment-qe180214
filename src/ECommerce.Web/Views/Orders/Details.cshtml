@@ -376,3 +376,50 @@
         }
     }
 </style>
+
+@section Scripts {
+    <script>
+        // Auto-refresh payment status every 5 seconds if status is Pending/Processing
+        (function() {
+            var currentPaymentStatus = '@Model.PaymentStatus';
+            var currentOrderStatus = '@Model.Status';
+            var orderId = @Model.OrderId;
+            var refreshCount = 0;
+            var maxRefreshCount = 24; // 24 * 5 = 120 seconds = 2 minutes
+            
+            // Only auto-refresh if payment is still processing
+            if (currentPaymentStatus === 'Pending' || currentPaymentStatus === 'Processing') {
+                var refreshInterval = setInterval(function() {
+                    refreshCount++;
+                    
+                    // Stop after 2 minutes
+                    if (refreshCount >= maxRefreshCount) {
+                        clearInterval(refreshInterval);
+                        console.log('Auto-refresh stopped after 2 minutes');
+                        return;
+                    }
+                    
+                    // Check current status via AJAX
+                    $.ajax({
+                        url: '/Orders/GetOrderStatus?id=' + orderId,
+                        type: 'GET',
+                        success: function(response) {
+                            if (response && response.paymentStatus) {
+                                // If status changed, reload page to show new status
+                                if (response.paymentStatus !== currentPaymentStatus || 
+                                    response.orderStatus !== currentOrderStatus) {
+                                    console.log('Status changed! Reloading page...');
+                                    clearInterval(refreshInterval);
+                                    location.reload();
+                                }
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error checking status:', error);
+                        }
+                    });
+                }, 5000); // Check every 5 seconds
+            }
+        })();
+    </script>
+}

@@ -85,4 +85,29 @@ public class OrdersController : Controller
             return RedirectToAction("Checkout", "Cart");
         }
     }
+
+    // GET: /Orders/GetOrderStatus?id=5 - AJAX endpoint for real-time status check
+    [HttpGet]
+    public async Task<IActionResult> GetOrderStatus(int id)
+    {
+        // Check if user is logged in
+        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JWTToken")))
+        {
+            return Json(new { error = "Not authenticated" });
+        }
+
+        var order = await _orderService.GetOrderByIdAsync(id);
+
+        if (order == null)
+        {
+            return Json(new { error = "Order not found" });
+        }
+
+        return Json(new 
+        { 
+            orderId = order.OrderId,
+            orderStatus = order.Status,
+            paymentStatus = order.PaymentStatus
+        });
+    }
 }
