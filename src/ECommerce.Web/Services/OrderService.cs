@@ -131,7 +131,7 @@ public class OrderService : IOrderService
         try
         {
             AddAuthHeader();
-            var response = await _httpClient.GetAsync("/api/orders/{orderId}");
+            var response = await _httpClient.GetAsync($"/api/orders/{orderId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -147,13 +147,18 @@ public class OrderService : IOrderService
                     return MapToViewModel(orderDto);
                 }
             }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _logger.LogWarning($"Unauthorized access to order {orderId}. Session may have expired.");
+            }
             else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 _logger.LogWarning($"Order {orderId} not found");
             }
             else
             {
-                _logger.LogError($"Failed to get order {orderId}. Status: {response.StatusCode}");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogError($"Failed to get order {orderId}. Status: {response.StatusCode}, Error: {errorContent}");
             }
         }
         catch (Exception ex)

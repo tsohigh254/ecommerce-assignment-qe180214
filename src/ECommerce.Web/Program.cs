@@ -104,6 +104,24 @@ app.UseRouting();
 // Add Session middleware (must be before UseAuthorization)
 app.UseSession();
 
+// Middleware to handle data protection errors gracefully
+app.Use(async (context, next) =>
+{
+    try
+    {
+        // Try to access session to trigger any data protection errors early
+        var testKey = context.Session.Keys.FirstOrDefault();
+    }
+    catch (System.Security.Cryptography.CryptographicException ex)
+    {
+        // Session cookie was encrypted with old key - clear it
+        context.Response.Cookies.Delete(".AspNetCore.Session");
+        app.Logger.LogWarning(ex, "Data protection key mismatch - cleared session cookie");
+    }
+    
+    await next();
+});
+
 app.UseAuthorization();
 
 app.MapControllerRoute(

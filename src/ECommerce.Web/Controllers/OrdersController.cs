@@ -34,9 +34,10 @@ public class OrdersController : Controller
     public async Task<IActionResult> Details(int id)
     {
         // Check if user is logged in
-        if (string.IsNullOrEmpty(HttpContext.Session.GetString("JWTToken")))
+        var token = HttpContext.Session.GetString("JWTToken");
+        if (string.IsNullOrEmpty(token))
         {
-            TempData["ErrorMessage"] = "Please login to view order details";
+            TempData["ErrorMessage"] = "Your session has expired. Please login again.";
             return RedirectToAction("Login", "Account");
         }
 
@@ -44,7 +45,16 @@ public class OrdersController : Controller
 
         if (order == null)
         {
-            TempData["ErrorMessage"] = "Order not found";
+            // Check if token still exists - if yes, order truly doesn't exist
+            // If token is gone, session expired
+            var tokenAfter = HttpContext.Session.GetString("JWTToken");
+            if (string.IsNullOrEmpty(tokenAfter))
+            {
+                TempData["ErrorMessage"] = "Your session has expired. Please login again to view your orders.";
+                return RedirectToAction("Login", "Account");
+            }
+            
+            TempData["ErrorMessage"] = "Order not found or you don't have permission to view it.";
             return RedirectToAction("Index");
         }
 
