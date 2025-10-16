@@ -141,7 +141,7 @@ public class CartService : ICartService
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PutAsync(
-                $"/api/cart/item/{cartItemId}", 
+                "/api/cart/item/{cartItemId}", 
                 content);
 
             if (response.IsSuccessStatusCode)
@@ -169,7 +169,7 @@ public class CartService : ICartService
         {
             AddAuthHeader();
             var response = await _httpClient.DeleteAsync(
-                $"/api/cart/item/{cartItemId}");
+                "/api/cart/item/{cartItemId}");
 
             if (response.IsSuccessStatusCode)
             {
