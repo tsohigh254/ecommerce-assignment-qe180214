@@ -67,7 +67,7 @@
                                 <div class="col-md-3">
                                     <label class="form-label small text-muted mb-1">Quantity</label>
                                     <div class="btn-group align-items-center cart-qty-group" role="group" aria-label="Quantity controls">
-                                        <button class="btn btn-outline-danger btn-qty rounded-circle quantity-minus" type="button" title="Decrease quantity" aria-label="Decrease quantity">
+                                        <button class="btn btn-outline-danger btn-qty rounded-circle quantity-minus" type="button" title="Decrease quantity" aria-label="Decrease quantity" data-bs-toggle="tooltip" data-bs-placement="top">
                                             <i class="bi bi-dash-lg"></i>
                                         </button>
                                         <input type="number" class="form-control text-center fw-bold quantity-input" 
@@ -75,8 +75,10 @@
                                                data-item-id="@item.CartItemId"
                                                data-price="@item.ProductPrice"
                                                aria-label="Quantity"
-                                               style="max-width: 60px;">
-                                        <button class="btn btn-outline-success btn-qty rounded-circle quantity-plus" type="button" title="Increase quantity" aria-label="Increase quantity">
+                                               inputmode="numeric"
+                                               pattern="[0-9]*"
+                                               style="max-width: 72px;">
+                                        <button class="btn btn-outline-success btn-qty rounded-circle quantity-plus" type="button" title="Increase quantity" aria-label="Increase quantity" data-bs-toggle="tooltip" data-bs-placement="top">
                                             <i class="bi bi-plus-lg"></i>
                                         </button>
                                     </div>
@@ -90,9 +92,9 @@
                                 <div class="col-md-1 text-end">
                                     <form method="post" asp-action="Remove" asp-controller="Cart" class="d-inline">
                                         <input type="hidden" name="cartItemId" value="@item.CartItemId" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger btn-remove-item" 
+                                        <button type="submit" class="btn btn-sm btn-outline-danger btn-remove-item rounded-circle" 
                                                 onclick="return confirm('Remove this item from cart?')"
-                                                title="Remove item" aria-label="Remove item">
+                                                title="Remove item" aria-label="Remove item" data-bs-toggle="tooltip" data-bs-placement="top">
                                             <i class="bi bi-x-lg"></i>
                                         </button>
                                     </form>
@@ -150,6 +152,13 @@
 
     <script>
         $(document).ready(function() {
+            // Enable Bootstrap tooltips if available
+            if (window.bootstrap && bootstrap.Tooltip) {
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
             // Handle quantity changes
             $('.quantity-minus').click(function() {
                 var input = $(this).siblings('.quantity-input');

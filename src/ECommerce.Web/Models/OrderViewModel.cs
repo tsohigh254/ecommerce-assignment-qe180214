@@ -17,7 +17,6 @@ public class OrderViewModel
     public string StatusBadgeClass => Status switch
     {
         "Completed" => "badge bg-success",
-        "Paid" => "badge bg-success",         // Added for webhook status
         "Processing" => "badge bg-info",
         "Pending" => "badge bg-warning",
         "Cancelled" => "badge bg-danger",
@@ -26,7 +25,6 @@ public class OrderViewModel
     
     public string PaymentStatusBadgeClass => PaymentStatus switch
     {
-        "Done" => "badge bg-success",         // Added for webhook status
         "Paid" => "badge bg-success",
         "Succeeded" => "badge bg-success",
         "Processing" => "badge bg-info",
