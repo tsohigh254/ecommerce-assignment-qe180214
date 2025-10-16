@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ECommerce.API.Data;
 using ECommerce.API.Services;
 using Stripe;
+using Stripe.Checkout;
 
 namespace ECommerce.API.Controllers;
 
@@ -70,41 +71,78 @@ public class WebhookController : ControllerBase
             _logger.LogInformation("Processing webhook event: {EventType} - {EventId}", 
                 stripeEvent.Type, stripeEvent.Id);
 
-            // Handle payment intent succeeded - Update order status
-            if (stripeEvent.Type == "payment_intent.succeeded")
+            // Handle different Stripe events
+            switch (stripeEvent.Type)
             {
-                var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
-                if (paymentIntent != null)
-                {
-                    await UpdateOrderPaymentStatus(
-                        paymentIntent.Id,
-                        "Paid", // payment status
-                        "Paid"); // order status
-                }
-            }
-            // Handle payment intent payment failed
-            else if (stripeEvent.Type == "payment_intent.payment_failed")
-            {
-                var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
-                if (paymentIntent != null)
-                {
-                    await UpdateOrderPaymentStatus(
-                        paymentIntent.Id, 
-                        "Failed", 
-                        "Cancelled");
-                }
-            }
-            // Handle payment intent cancelled
-            else if (stripeEvent.Type == "payment_intent.canceled")
-            {
-                var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
-                if (paymentIntent != null)
-                {
-                    await UpdateOrderPaymentStatus(
-                        paymentIntent.Id, 
-                        "Cancelled", 
-                        "Cancelled");
-                }
+                // Payment completed successfully
+                case "payment_intent.succeeded":
+                    var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
+                    if (paymentIntent != null)
+                    {
+                        await UpdateOrderPaymentStatus(
+                            paymentIntent.Id,
+                            "Done",     // PaymentStatus: Processing -> Done
+                            "Paid");    // Status: Pending -> Paid
+                        
+                        _logger.LogInformation(
+                            "Payment succeeded for PaymentIntent: {PaymentIntentId}", 
+                            paymentIntent.Id);
+                    }
+                    break;
+
+                // Checkout session completed (important for Stripe Checkout flow)
+                case "checkout.session.completed":
+                    var session = stripeEvent.Data.Object as Session;
+                    if (session != null && !string.IsNullOrEmpty(session.PaymentIntentId))
+                    {
+                        await UpdateOrderPaymentStatus(
+                            session.PaymentIntentId,
+                            "Done",     // PaymentStatus: Processing -> Done
+                            "Paid");    // Status: Pending -> Paid
+                        
+                        _logger.LogInformation(
+                            "Checkout session completed for PaymentIntent: {PaymentIntentId}", 
+                            session.PaymentIntentId);
+                    }
+                    break;
+
+                // Payment failed
+                case "payment_intent.payment_failed":
+                    var failedIntent = stripeEvent.Data.Object as PaymentIntent;
+                    if (failedIntent != null)
+                    {
+                        await UpdateOrderPaymentStatus(
+                            failedIntent.Id, 
+                            "Failed",      // PaymentStatus
+                            "Cancelled");  // Status
+                        
+                        _logger.LogWarning(
+                            "Payment failed for PaymentIntent: {PaymentIntentId}", 
+                            failedIntent.Id);
+                    }
+                    break;
+
+                // Payment cancelled
+                case "payment_intent.canceled":
+                    var canceledIntent = stripeEvent.Data.Object as PaymentIntent;
+                    if (canceledIntent != null)
+                    {
+                        await UpdateOrderPaymentStatus(
+                            canceledIntent.Id, 
+                            "Cancelled",   // PaymentStatus
+                            "Cancelled");  // Status
+                        
+                        _logger.LogInformation(
+                            "Payment cancelled for PaymentIntent: {PaymentIntentId}", 
+                            canceledIntent.Id);
+                    }
+                    break;
+
+                default:
+                    _logger.LogInformation(
+                        "Unhandled webhook event type: {EventType}", 
+                        stripeEvent.Type);
+                    break;
             }
 
             return Ok(new { received = true, eventType = stripeEvent.Type });
