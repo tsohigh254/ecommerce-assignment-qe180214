@@ -231,6 +231,22 @@ namespace ECommerce.API.Controllers
                     return NotFound();
                 }
 
+                // Prevent deleting products that are part of existing orders
+                var isReferencedInOrders = await _context.OrderItems.AnyAsync(oi => oi.ProductId == id);
+                if (isReferencedInOrders)
+                {
+                    return Conflict(new { message = "Cannot delete product because it is referenced in existing orders." });
+                }
+
+                // Remove any cart items referencing this product to satisfy FK constraints
+                var relatedCartItems = await _context.CartItems
+                    .Where(ci => ci.ProductId == id)
+                    .ToListAsync();
+                if (relatedCartItems.Count > 0)
+                {
+                    _context.CartItems.RemoveRange(relatedCartItems);
+                }
+
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
 
@@ -239,7 +255,7 @@ namespace ECommerce.API.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while deleting product {Id}", id);
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
             }
         }
     }
