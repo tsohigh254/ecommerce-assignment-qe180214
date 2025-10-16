@@ -66,19 +66,19 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label small text-muted mb-1">Quantity</label>
-                                    <div class="btn-group align-items-center cart-qty-group" role="group" aria-label="Quantity controls">
-                                        <button class="btn btn-outline-danger btn-qty rounded-circle quantity-minus" type="button" title="Decrease quantity" aria-label="Decrease quantity" data-bs-toggle="tooltip" data-bs-placement="top">
+                                    <div class="d-flex align-items-center cart-qty-group" role="group" aria-label="Quantity controls">
+                                        <button class="btn btn-danger btn-qty quantity-minus shadow-sm" type="button" title="Decrease quantity" aria-label="Decrease quantity">
                                             <i class="bi bi-dash-lg"></i>
                                         </button>
-                                        <input type="number" class="form-control text-center fw-bold quantity-input" 
+                                        <input type="number" class="form-control text-center fw-bold quantity-input mx-2" 
                                                value="@item.Quantity" min="1" max="99" 
                                                data-item-id="@item.CartItemId"
                                                data-price="@item.ProductPrice"
                                                aria-label="Quantity"
                                                inputmode="numeric"
                                                pattern="[0-9]*"
-                                               style="max-width: 72px;">
-                                        <button class="btn btn-outline-success btn-qty rounded-circle quantity-plus" type="button" title="Increase quantity" aria-label="Increase quantity" data-bs-toggle="tooltip" data-bs-placement="top">
+                                               style="max-width: 70px; border: 2px solid #dee2e6;">
+                                        <button class="btn btn-success btn-qty quantity-plus shadow-sm" type="button" title="Increase quantity" aria-label="Increase quantity">
                                             <i class="bi bi-plus-lg"></i>
                                         </button>
                                     </div>
@@ -92,10 +92,10 @@
                                 <div class="col-md-1 text-end">
                                     <form method="post" asp-action="Remove" asp-controller="Cart" class="d-inline">
                                         <input type="hidden" name="cartItemId" value="@item.CartItemId" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger btn-remove-item rounded-circle" 
+                                        <button type="submit" class="btn btn-danger btn-remove-item shadow-sm" 
                                                 onclick="return confirm('Remove this item from cart?')"
-                                                title="Remove item" aria-label="Remove item" data-bs-toggle="tooltip" data-bs-placement="top">
-                                            <i class="bi bi-x-lg"></i>
+                                                title="Remove item" aria-label="Remove item">
+                                            <i class="bi bi-trash-fill"></i>
                                         </button>
                                     </form>
                                 </div>
@@ -164,22 +164,18 @@
                 var input = $(this).siblings('.quantity-input');
                 var value = parseInt(input.val());
                 if (value > 1) {
-                    $(this).prop('disabled', true);
                     input.val(value - 1);
                     updateQuantity(input);
                 }
-                $(this).prop('disabled', false);
             });
 
             $('.quantity-plus').click(function() {
                 var input = $(this).siblings('.quantity-input');
                 var value = parseInt(input.val());
                 if (value < 99) {
-                    $(this).prop('disabled', true);
                     input.val(value + 1);
                     updateQuantity(input);
                 }
-                $(this).prop('disabled', false);
             });
 
             $('.quantity-input').change(function() {
@@ -197,12 +193,18 @@
                 var quantity = parseInt(input.val());
                 var price = parseFloat(input.data('price'));
 
-                // disable both buttons during request
+                // Disable buttons and add loading state
                 var group = input.closest('.cart-qty-group');
                 var minusBtn = group.find('.quantity-minus');
                 var plusBtn = group.find('.quantity-plus');
+                var cartItem = input.closest('.cart-item');
+                
                 minusBtn.prop('disabled', true);
                 plusBtn.prop('disabled', true);
+                input.prop('disabled', true);
+                
+                // Add loading animation
+                cartItem.css('opacity', '0.6');
 
                 $.ajax({
                     url: '@Url.Action("UpdateQuantity", "Cart")',
@@ -213,9 +215,12 @@
                     },
                     success: function(response) {
                         if (response.success) {
-                            // Update subtotal for this item
+                            // Update subtotal for this item with animation
                             var subtotal = price * quantity;
-                            input.closest('.cart-item').find('.item-subtotal').text('$' + subtotal.toFixed(2));
+                            var subtotalEl = cartItem.find('.item-subtotal');
+                            subtotalEl.fadeOut(150, function() {
+                                $(this).text('$' + subtotal.toFixed(2)).fadeIn(150);
+                            });
                             
                             // Recalculate cart total
                             var total = 0;
@@ -227,25 +232,36 @@
                                 totalItems += itemQty;
                             });
                             
-                            $('#total-items').text(totalItems);
-                            $('#subtotal').text('$' + total.toFixed(2));
-                            $('#total').text('$' + total.toFixed(2));
+                            // Update totals with animation
+                            $('#total-items').fadeOut(150, function() {
+                                $(this).text(totalItems).fadeIn(150);
+                            });
+                            $('#subtotal').fadeOut(150, function() {
+                                $(this).text('$' + total.toFixed(2)).fadeIn(150);
+                            });
+                            $('#total').fadeOut(150, function() {
+                                $(this).text('$' + total.toFixed(2)).fadeIn(150);
+                            });
 
                             // Show success animation
-                            input.closest('.cart-item').addClass('border-success');
+                            cartItem.css('opacity', '1');
+                            cartItem.addClass('border-success');
                             setTimeout(function() {
-                                input.closest('.cart-item').removeClass('border-success');
-                            }, 500);
+                                cartItem.removeClass('border-success');
+                            }, 800);
                         } else {
+                            cartItem.css('opacity', '1');
                             alert('Failed to update quantity: ' + response.message);
                         }
                     },
                     error: function() {
+                        cartItem.css('opacity', '1');
                         alert('An error occurred while updating quantity');
                     },
                     complete: function() {
                         minusBtn.prop('disabled', false);
                         plusBtn.prop('disabled', false);
+                        input.prop('disabled', false);
                     }
                 });
             }

@@ -228,29 +228,49 @@ namespace ECommerce.API.Controllers
                 var product = await _context.Products.FindAsync(id);
                 if (product == null)
                 {
-                    return NotFound();
+                    return NotFound(new { message = $"Product with ID {id} not found." });
                 }
 
-                // Prevent deleting products that are part of existing orders
+                // Check if product is referenced in existing orders
                 var isReferencedInOrders = await _context.OrderItems.AnyAsync(oi => oi.ProductId == id);
                 if (isReferencedInOrders)
                 {
-                    return Conflict(new { message = "Cannot delete product because it is referenced in existing orders." });
+                    _logger.LogWarning("Cannot delete product {Id} because it is referenced in existing orders", id);
+                    return Conflict(new 
+                    { 
+                        message = "Cannot delete product because it is referenced in existing orders.",
+                        suggestion = "You can only delete products that have never been ordered."
+                    });
                 }
 
-                // Remove any cart items referencing this product to satisfy FK constraints
+                // Remove any cart items referencing this product first
                 var relatedCartItems = await _context.CartItems
                     .Where(ci => ci.ProductId == id)
                     .ToListAsync();
-                if (relatedCartItems.Count > 0)
+                
+                if (relatedCartItems.Any())
                 {
+                    _logger.LogInformation("Removing {Count} cart items referencing product {Id}", relatedCartItems.Count, id);
                     _context.CartItems.RemoveRange(relatedCartItems);
+                    await _context.SaveChangesAsync(); // Save to remove cart items first
                 }
 
+                // Now delete the product
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
 
-                return NoContent();
+                _logger.LogInformation("Successfully deleted product {Id}", id);
+                return Ok(new { message = $"Product '{product.Name}' deleted successfully." });
+            }
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError(dbEx, "Database error occurred while deleting product {Id}", id);
+                return StatusCode(500, new 
+                { 
+                    message = "Cannot delete product due to foreign key constraint.",
+                    detail = "This product may be referenced by other records in the database.",
+                    error = dbEx.InnerException?.Message ?? dbEx.Message 
+                });
             }
             catch (Exception ex)
             {
